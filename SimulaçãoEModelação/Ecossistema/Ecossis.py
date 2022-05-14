@@ -60,13 +60,13 @@ def initGrid(nx,ny):
             size=np.random.randint(2)
             if rd<=p1/(p1+p2+p3):
                 grid[i][j]=Bicho(1,size)
-                herbPos.append([i,j])
+                plantPos.append([i,j])
             elif rd<(p1+p2)/(p1+p2+p3):
                 grid[i][j]=Bicho(2,size)
-                carnPos.append([i,j])
+                herbPos.append([i,j])
             else:
                 grid[i][j]=Bicho(3,size)
-                plantPos.append([i,j])
+                carnPos.append([i,j])
     random.shuffle(herbPos)
     random.shuffle(carnPos)
     random.shuffle(plantPos)
@@ -81,10 +81,10 @@ def look4food(grid,i,j):
         rdPos=rdPosvec[n]
         if rdPos==0:
             if grid[i-1][j].type==(grid[i][j].type-1):
-                return [i,j]
+                return [i-1,j]
         elif rdPos==1:
             if grid[i][j-1].type==(grid[i][j].type-1):
-                return [i,j]
+                return [i,j-1]
         elif rdPos==2:
             if i+1==grid.shape[0]:
                 if grid[0][j].type==(grid[i][j].type-1):
@@ -102,7 +102,6 @@ def look4food(grid,i,j):
     return 'nada'
 
         
-
         
         
         
@@ -113,7 +112,7 @@ def look4food(grid,i,j):
 #FUNÇAO PRINCIPAL CHAMA-SE CIRCLE OF LIFE
 tudo=initGrid(25,25)
 grid=tudo[0]
-print(look4food(grid,2,2))
+print(look4food(grid,0,0))
 
         
 
