@@ -75,28 +75,32 @@ def initGrid(nx,ny):
 
 
 def look4food(grid,i,j):
-    rdPos=np.random.randint(4)
-    if rdPos==0:
-        if grid[i-1][j].type==(grid[i][j].type-1):
-            return [i,j]
-    elif rdPos==1:
-        if grid[i][j-1].type==(grid[i][j].type-1):
-            return [i,j]
-    elif rdPos==2:
-        if i+1==grid.shape[0]:
-            if grid[0][j].type==(grid[i][j].type-1):
-                return [0,j]
+    rdPosvec=[0,1,2,3]
+    random.shuffle(rdPosvec)
+    for n in range(4):
+        rdPos=rdPosvec[n]
+        if rdPos==0:
+            if grid[i-1][j].type==(grid[i][j].type-1):
+                return [i,j]
+        elif rdPos==1:
+            if grid[i][j-1].type==(grid[i][j].type-1):
+                return [i,j]
+        elif rdPos==2:
+            if i+1==grid.shape[0]:
+                if grid[0][j].type==(grid[i][j].type-1):
+                    return [0,j]
+            else:
+                if grid[i+1][j].type==(grid[i][j].type-1):
+                    return [i+1,j]
         else:
-            if grid[i+1][j].type==(grid[i][j].type-1):
-                return [i+1,j]
-    else:
-        if j+1==grid.shape[1]:
-            if grid[i][0].type==(grid[i][j].type-1):
-                return [i,0]
-        else:
-            if grid[i][j+1].type==(grid[i][j].type-1):
-                return [i,j+1]
+            if j+1==grid.shape[1]:
+                if grid[i][0].type==(grid[i][j].type-1):
+                    return [i,0]
+            else:
+                if grid[i][j+1].type==(grid[i][j].type-1):
+                    return [i,j+1]
     return 'nada'
+
         
 
         
