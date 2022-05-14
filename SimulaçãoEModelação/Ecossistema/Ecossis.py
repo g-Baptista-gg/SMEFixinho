@@ -67,9 +67,9 @@ def initGrid(nx,ny):
             else:
                 grid[i][j]=Bicho(3,size)
                 carnPos.append([i,j])
-#    random.shuffle(herbPos)
-#    random.shuffle(carnPos)
-#    random.shuffle(plantPos)
+    random.shuffle(herbPos)
+    random.shuffle(carnPos)
+    random.shuffle(plantPos)
     return grid,herbPos,carnPos,plantPos
 
 
