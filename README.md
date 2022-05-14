@@ -1,2 +1,2 @@
 # SMEFixinho
-BERY NICE
+Trabalhos very fixinhos do Gonçalo, Grilo e companhia.
