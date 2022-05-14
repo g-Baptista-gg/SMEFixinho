@@ -1,2 +1,2 @@
 # SMEFixinho
-Trabalhos very fixinhos do Gonçalo, Grilo e companhia.
+Trabalho de Instrumentação Digital: Um ECG bonito bonito
