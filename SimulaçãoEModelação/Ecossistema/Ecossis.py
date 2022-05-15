@@ -58,6 +58,8 @@ class Bicho:
             self.size -= 1
         else:
             self.type = 0
+    def die(self):
+        self.type = 0
         
 #%%
 
@@ -71,6 +73,7 @@ def initGrid(nx, ny):
     herbPos = [] #Cria uma lista para as posições dos herbívoros da rede
     carnPos = [] #Cria uma lista para as posições dos carnívoros da rede
     plantPos = [] #Cria uma lista para as posições das plantas da rede
+    emptyPos=[]
     
     p1 = 9 #Peso relativo de plantas na inicialização da rede
     p2 = 3 #Peso relativo de herbívoros na inicialização da rede
@@ -92,11 +95,11 @@ def initGrid(nx, ny):
                 carnPos.append([i, j])
     
     #Ordenação aleatória dos vetores posição de cada uma das listas
-    random.shuffle(herbPos)
-    random.shuffle(carnPos)
-    random.shuffle(plantPos)
+    #random.shuffle(herbPos)
+    #random.shuffle(carnPos)
+    #random.shuffle(plantPos)
     
-    return grid, herbPos, carnPos, plantPos
+    return grid, herbPos, carnPos, plantPos,emptyPos
 
 #%%
 
@@ -115,9 +118,13 @@ def look4food(grid, i, j):
         
         if rdPos == 0: #Procura de alimento na célula acima
             if grid[i - 1][j].type == (grid[i][j].type - 1):
+                if i-1 == -1 :
+                    return [grid.shape[0]-1,j]
                 return [i - 1, j]
         elif rdPos == 1: #Procura de alimento na célula à esquerda
             if grid[i][j - 1].type == (grid[i][j].type - 1):
+                if j-1 == -1 :
+                    return [i,grid.shape[1]-1]
                 return [i, j - 1]
         elif rdPos == 2: #Procura de alimento na célula abaixo
             if i + 1 == grid.shape[0]:
@@ -151,9 +158,13 @@ def look4space(grid,i,j):
         
         if rdPos == 0: #Procura de espaço na célula acima
             if (grid[i - 1][j].type == (grid[i][j].type - 1)) or grid[i - 1][j].type==0 :
+                if i-1 == -1 :
+                    return [grid.shape[0]-1,j]
                 return [i - 1, j]
         elif rdPos == 1: #Procura de espaço na célula à esquerda
             if (grid[i][j - 1].type == (grid[i][j].type - 1)) or grid[i][j - 1].type==0:
+                if j-1 == -1 :
+                    return [i,grid.shape[1]-1]
                 return [i, j - 1]
         elif rdPos == 2: #Procura de espaço na célula abaixo
             if i + 1 == grid.shape[0]:
@@ -187,9 +198,13 @@ def look4empty(grid,i,j):
         
         if rdPos == 0: #Procura de espaço na célula acima
             if grid[i - 1][j].type==0 :
+                if i-1 == -1 :
+                    return [grid.shape[0]-1,j]
                 return [i - 1, j]
         elif rdPos == 1: #Procura de espaço na célula à esquerda
             if grid[i][j - 1].type==0:
+                if j-1 == -1 :
+                    return [i,grid.shape[1]-1]
                 return [i, j - 1]
         elif rdPos == 2: #Procura de espaço na célula abaixo
             if i + 1 == grid.shape[0]:
@@ -205,7 +220,7 @@ def look4empty(grid,i,j):
             else:
                 if grid[i][j+1].type==0:
                     return [i, j + 1]
-    
+    print('não ha comida')
     return -1
 
 #%%
@@ -264,13 +279,79 @@ def look4empty(grid,i,j):
 # 
 # =============================================================================
 #%%
-
+def iteration(tudo):
+    grid=tudo[0]
+    plantPos=tudo[3]
+    herbPos=tudo[1]
+    carnPos=tudo[2]
+    emptyPos=tudo[4]
+    toRemove=[]
+    for i in range(len(herbPos)):
+        iPos=herbPos[i][0]
+        jPos=herbPos[i][1]
+        foodPos=look4food(grid, iPos, jPos)
+        if (foodPos != -1): # caso o bicho coma
+            expandFlag= (grid[iPos,jPos].type==2) #ativa para caso ele já fosse forte antes de comer
+            grid[iPos,jPos].grow()
+            grid[foodPos[0]][foodPos[1]].shrink
+            if grid[foodPos[0]][foodPos[1]].type == 0:
+                plantPos.remove(foodPos) # apaga a planta que morreu
+                emptyPos.append(foodPos)
+            if expandFlag:
+                expandPos=look4space(grid, iPos, jPos)
+                if expandPos != -1 :
+                    if grid[expandPos[0]][expandPos[1]].type == 0 :
+                        emptyPos.remove(expandPos)
+                    else:
+                        plantPos.remove(expandPos)
+                        grid[expandPos[0]][expandPos[1]].die()
+                        emptyPos.append(expandPos)
+                    grid[expandPos[0]][expandPos[1]]=Bicho(2, 0)
+        else:
+            if grid[iPos,jPos].size == 0 :
+                grid[iPos,jPos].die()
+                emptyPos.append([iPos,jPos])
+                toRemove.append([iPos,jPos])
+            else:
+                print("QUER MOVER")
+                movePos=look4space(grid, iPos, jPos)
+                if movePos != -1 :
+                    herbPos.append(movePos)
+                    toRemove.append(movePos)
+                    grid[movePos[0]][movePos[1]]=grid[iPos,jPos]
+                    grid[iPos,jPos].die()
+                    print('MOVEU!!!')
+                
+                
+                
+    for i in range(len(toRemove)):#limpar posições de antigos herbívoros
+        herbPos.remove(toRemove[i])
+    toRemove.clear()
+        
+    
+                        
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+#%%
 #FUNÇAO PRINCIPAL CHAMA-SE CIRCLE OF LIFE
 tudo=initGrid(25,25)
 grid=tudo[0]
 plantPos=tudo[3]
 herbPos=tudo[1]
 carnPos=tudo[2]
-print(look4food(grid,0,0))
+emptyPos=tudo[4]
+iteration(tudo)
+#print(look4food(grid,0,0))
 
 
