@@ -25,15 +25,15 @@
 
 #%% Imports
 
-%matplotlib qt
+#%matplotlib qt
 import numpy as np
 import matplotlib.pyplot as plt
 import random
 
 #%%
 
-    '''A classe Bicho tem como objetivo conter toda a informação necessária em relação a um determinado ponto da rede, como o tipo de ser vivo e o seu respetivo nível
-    changeTipo: muda o tipo de ser vivo do ponto da rede
+'''A classe Bicho tem como objetivo conter toda a informação necessária em relação a um determinado ponto da rede, como o tipo de ser vivo e o seu respetivo nível
+    changeType: muda o tipo de ser vivo do ponto da rede
     grow: faz o ser vivo aumentar de nível se este ainda não estiver no nível máximo (2)
     shrink: diminui o nível do ser vivo; se o nível deste for mínimo (0), o tipo de ser vivo passa a 0 (ou seja, passa a ser uma célula sem ser vivo)'''
 
@@ -45,7 +45,7 @@ class Bicho:
     def __str__(self):
         return 'Hallo'
     
-    def changeTipo(self, newType):
+    def changeType(self, newType):
         self.type = newType
         self.size = 0
     
@@ -134,7 +134,79 @@ def look4food(grid, i, j):
                 if grid[i][j + 1].type == (grid[i][j].type - 1):
                     return [i, j + 1]
     
-    return 'No Food'
+    return -1
+
+#%%
+    '''Esta função procura espaço para expansão para um determinado ser vivo nos primeiros vizinhos de von Neumann. Note-se que o alimento de um determinado tipo de ser vivo corresponde a (tipo - 1)
+    grid: rede do ecossistema
+    i: linha onde se encontra o ser vivo
+    j: coluna onde se encontra o ser vivo'''
+def look4space(grid,i,j):
+    #ordena aleatoriamente as células onde se vai procurar espaço para expansão
+    rdPosvec = [0, 1, 2, 3]
+    random.shuffle(rdPosvec)
+    
+    for n in range(4):
+        rdPos=rdPosvec[n]
+        
+        if rdPos == 0: #Procura de espaço na célula acima
+            if (grid[i - 1][j].type == (grid[i][j].type - 1)) or grid[i - 1][j].type==0 :
+                return [i - 1, j]
+        elif rdPos == 1: #Procura de espaço na célula à esquerda
+            if (grid[i][j - 1].type == (grid[i][j].type - 1)) or grid[i][j - 1].type==0:
+                return [i, j - 1]
+        elif rdPos == 2: #Procura de espaço na célula abaixo
+            if i + 1 == grid.shape[0]:
+                if (grid[0][j].type == (grid[i][j].type - 1)) or grid[0][j].type==0:
+                    return [0, j]
+            else:
+                if (grid[i + 1][j].type == (grid[i][j].type - 1)) or grid[i+1][j].type==0:
+                    return [i + 1, j]
+        else: #Procura de espaço na célula à direita
+            if j + 1 == grid.shape[1]:
+                if (grid[i][0].type == (grid[i][j].type - 1)) or grid[i][0].type==0:
+                    return [i, 0]
+            else:
+                if (grid[i][j + 1].type == (grid[i][j].type - 1)) or grid[i][j+1].type==0:
+                    return [i, j + 1]
+    
+    return -1
+
+#%%
+    '''Esta função procura espaço vazio para mudança de posição para um determinado ser vivo nos primeiros vizinhos de von Neumann. Note-se que o alimento de um determinado tipo de ser vivo corresponde a (tipo - 1)
+    grid: rede do ecossistema
+    i: linha onde se encontra o ser vivo
+    j: coluna onde se encontra o ser vivo'''
+def look4empty(grid,i,j):
+    #ordena aleatoriamente as células onde se vai procurar espaço para expansão
+    rdPosvec = [0, 1, 2, 3]
+    random.shuffle(rdPosvec)
+    
+    for n in range(4):
+        rdPos=rdPosvec[n]
+        
+        if rdPos == 0: #Procura de espaço na célula acima
+            if grid[i - 1][j].type==0 :
+                return [i - 1, j]
+        elif rdPos == 1: #Procura de espaço na célula à esquerda
+            if grid[i][j - 1].type==0:
+                return [i, j - 1]
+        elif rdPos == 2: #Procura de espaço na célula abaixo
+            if i + 1 == grid.shape[0]:
+                if grid[0][j].type==0:
+                    return [0, j]
+            else:
+                if grid[i+1][j].type==0:
+                    return [i + 1, j]
+        else: #Procura de espaço na célula à direita
+            if j + 1 == grid.shape[1]:
+                if grid[i][0].type==0:
+                    return [i, 0]
+            else:
+                if grid[i][j+1].type==0:
+                    return [i, j + 1]
+    
+    return -1
 
 #%%
 
@@ -145,50 +217,52 @@ def look4food(grid, i, j):
     
     FUNÇÃO NÃO TERMINADA!! FALTA IR ALTERANDO AS MATRIZES COM AS POSIÇÕES DOS DIFERENTES TIPOS DE SERES VIVOS E ATUALIZAR A FUNÇÃO look4food PARA SER MAIS GERAL'''
 
-def iteration(gridInfo, nx, ny):
-    
-    for i in range(len(gridInfo[1])):
-        foodPos = look4food(gridInfo[0], gridInfo[1][i, 0], gridInfo[1][i, 1])
-        if foodPos != 'No Food':
-            gridInfo[0][foodPos[0], foodPos[1]].shrink()
-            if gridInfo[0][gridInfo[1][i, 0], gridInfo[1][i, 1]].size < 2:
-                gridInfo[0][gridInfo[1][i, 0], gridInfo[1][i, 1]].grow()
-            else:
-                newHerb = look4food(gridInfo[0], gridInfo[1][i, 0], gridInfo[1][i, 1])
-                gridInfo[0][newHerb[0], newHerb[1]].changeTipo(2)
-        else:
-            gridInfo[0][gridInfo[1][i, 0], gridInfo[1][i, 1]].shrink()
-            if gridInfo[0][gridInfo[1][i, 0], gridInfo[1][i, 1]].type == 0:
-                newPos = look4food(gridInfo[0], gridInfo[1][i, 0], gridInfo[1][i, 1])
-                if newPos != 'No Food':
-                    gridInfo[0][gridInfo[1][i, 0], gridInfo[1][i, 1]].changeTipo(0)
-                    gridInfo[0][newPos[0], newPos[1]].changeTipo(2)
-                    
-    for i in range(len(gridInfo[2])):
-        foodPos = look4food(gridInfo[0], gridInfo[2][i, 0], gridInfo[2][i, 1])
-        if foodPos != 'No Food':
-            gridInfo[0][foodPos[0], foodPos[1]].shrink()
-            if gridInfo[0][gridInfo[2][i, 0], gridInfo[2][i, 1]].size < 2:
-                gridInfo[0][gridInfo[2][i, 0], gridInfo[2][i, 1]].grow()
-            else:
-                newCarn = look4food(gridInfo[0], gridInfo[2][i, 0], gridInfo[2][i, 1])
-                gridInfo[0][newCarn[0], newCarn[1]].changeTipo(3)
-        else:
-            gridInfo[0][gridInfo[2][i, 0], gridInfo[2][i, 1]].shrink()
-            if gridInfo[0][gridInfo[2][i, 0], gridInfo[2][i, 1]].type == 0:
-                newPos = look4food(gridInfo[0], gridInfo[2][i, 0], gridInfo[2][i, 1])
-                if newPos != 'No Food':
-                    gridInfo[0][gridInfo[2][i, 0], gridInfo[2][i, 1]].changeTipo(0)
-                    gridInfo[0][newPos[0], newPos[1]].changeTipo(3)
-                    
-    for i in range(len(gridInfo[3])):
-        gridInfo[0][gridInfo[3][i, 0], gridInfo[3][i, 1]].grow()
-        
-    for i in range(nx):
-        for j in range(ny):
-            if gridInfo[0][i, j].type == 0:
-                gridInfo[0][i, j].changeTipo(1)
-
+# =============================================================================
+# def iteration(gridInfo, nx, ny):
+#     
+#     for i in range(len(gridInfo[1])):
+#         foodPos = look4food(gridInfo[0], gridInfo[1][i, 0], gridInfo[1][i, 1])
+#         if foodPos != 'No Food':
+#             gridInfo[0][foodPos[0], foodPos[1]].shrink()
+#             if gridInfo[0][gridInfo[1][i, 0], gridInfo[1][i, 1]].size < 2:
+#                 gridInfo[0][gridInfo[1][i, 0], gridInfo[1][i, 1]].grow()
+#             else:
+#                 newHerb = look4food(gridInfo[0], gridInfo[1][i, 0], gridInfo[1][i, 1])
+#                 gridInfo[0][newHerb[0], newHerb[1]].changeType(2)
+#         else:
+#             gridInfo[0][gridInfo[1][i, 0], gridInfo[1][i, 1]].shrink()
+#             if gridInfo[0][gridInfo[1][i, 0], gridInfo[1][i, 1]].type == 0:
+#                 newPos = look4food(gridInfo[0], gridInfo[1][i, 0], gridInfo[1][i, 1])
+#                 if newPos != 'No Food':
+#                     gridInfo[0][gridInfo[1][i, 0], gridInfo[1][i, 1]].changeType(0)
+#                     gridInfo[0][newPos[0], newPos[1]].changeType(2)
+#                     
+#     for i in range(len(gridInfo[2])):
+#         foodPos = look4food(gridInfo[0], gridInfo[2][i, 0], gridInfo[2][i, 1])
+#         if foodPos != 'No Food':
+#             gridInfo[0][foodPos[0], foodPos[1]].shrink()
+#             if gridInfo[0][gridInfo[2][i, 0], gridInfo[2][i, 1]].size < 2:
+#                 gridInfo[0][gridInfo[2][i, 0], gridInfo[2][i, 1]].grow()
+#             else:
+#                 newCarn = look4food(gridInfo[0], gridInfo[2][i, 0], gridInfo[2][i, 1])
+#                 gridInfo[0][newCarn[0], newCarn[1]].changeType(3)
+#         else:
+#             gridInfo[0][gridInfo[2][i, 0], gridInfo[2][i, 1]].shrink()
+#             if gridInfo[0][gridInfo[2][i, 0], gridInfo[2][i, 1]].type == 0:
+#                 newPos = look4food(gridInfo[0], gridInfo[2][i, 0], gridInfo[2][i, 1])
+#                 if newPos != 'No Food':
+#                     gridInfo[0][gridInfo[2][i, 0], gridInfo[2][i, 1]].changeType(0)
+#                     gridInfo[0][newPos[0], newPos[1]].changeType(3)
+#                     
+#     for i in range(len(gridInfo[3])):
+#         gridInfo[0][gridInfo[3][i, 0], gridInfo[3][i, 1]].grow()
+#         
+#     for i in range(nx):
+#         for j in range(ny):
+#             if gridInfo[0][i, j].type == 0:
+#                 gridInfo[0][i, j].changeType(1)
+# 
+# =============================================================================
 #%%
 
 #FUNÇAO PRINCIPAL CHAMA-SE CIRCLE OF LIFE
