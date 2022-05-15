@@ -24,8 +24,8 @@
 """
 
 #%% Imports
-
-#%matplotlib qt
+%clear
+%matplotlib qt
 import numpy as np
 import matplotlib.pyplot as plt
 import random
