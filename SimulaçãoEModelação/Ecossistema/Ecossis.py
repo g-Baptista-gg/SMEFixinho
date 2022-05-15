@@ -112,7 +112,9 @@ def look4food(grid,i,j):
 #FUNÇAO PRINCIPAL CHAMA-SE CIRCLE OF LIFE
 tudo=initGrid(25,25)
 grid=tudo[0]
+plantPos=tudo[3]
+herbPos=tudo[1]
+carnPos=tudo[2]
 print(look4food(grid,0,0))
 
-        
 
