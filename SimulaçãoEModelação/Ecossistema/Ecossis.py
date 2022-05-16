@@ -150,6 +150,11 @@ def look4food(grid, i, j):
     j: coluna onde se encontra o ser vivo'''
 def look4space(grid,i,j):
     #ordena aleatoriamente as células onde se vai procurar espaço para expansão
+    if grid[i][j].type == 2 :
+        possTypes=[0,1]
+    else:
+        possTypes=[0,1,2]
+        
     rdPosvec = [0, 1, 2, 3]
     random.shuffle(rdPosvec)
     
@@ -157,28 +162,28 @@ def look4space(grid,i,j):
         rdPos=rdPosvec[n]
         
         if rdPos == 0: #Procura de espaço na célula acima
-            if (grid[i - 1][j].type == (grid[i][j].type - 1)) or grid[i - 1][j].type==0 :
+            if grid[i - 1][j].type in possTypes :
                 if i-1 == -1 :
                     return [grid.shape[0]-1,j]
                 return [i - 1, j]
         elif rdPos == 1: #Procura de espaço na célula à esquerda
-            if (grid[i][j - 1].type == (grid[i][j].type - 1)) or grid[i][j - 1].type==0:
+            if grid[i][j - 1].type in possTypes:
                 if j-1 == -1 :
                     return [i,grid.shape[1]-1]
                 return [i, j - 1]
         elif rdPos == 2: #Procura de espaço na célula abaixo
             if i + 1 == grid.shape[0]:
-                if (grid[0][j].type == (grid[i][j].type - 1)) or grid[0][j].type==0:
+                if grid[0][j].type in possTypes:
                     return [0, j]
             else:
-                if (grid[i + 1][j].type == (grid[i][j].type - 1)) or grid[i+1][j].type==0:
+                if grid[i + 1][j].type in possTypes:
                     return [i + 1, j]
         else: #Procura de espaço na célula à direita
             if j + 1 == grid.shape[1]:
-                if (grid[i][0].type == (grid[i][j].type - 1)) or grid[i][0].type==0:
+                if grid[i][0].type in possTypes:
                     return [i, 0]
             else:
-                if (grid[i][j + 1].type == (grid[i][j].type - 1)) or grid[i][j+1].type==0:
+                if grid[i][j + 1].type in possTypes:
                     return [i, j + 1]
     
     return -1
@@ -291,7 +296,7 @@ def iteration(tudo):
         jPos=herbPos[i][1]
         foodPos=look4food(grid, iPos, jPos)
         if (foodPos != -1): # caso o bicho coma
-            expandFlag= (grid[iPos,jPos].type==2) #ativa para caso ele já fosse forte antes de comer
+            expandFlag= (grid[iPos,jPos].size==2) #ativa para caso ele já fosse forte antes de comer
             grid[iPos,jPos].grow()
             grid[foodPos[0]][foodPos[1]].shrink
             if grid[foodPos[0]][foodPos[1]].type == 0:
@@ -304,8 +309,7 @@ def iteration(tudo):
                         emptyPos.remove(expandPos)
                     else:
                         plantPos.remove(expandPos)
-                        grid[expandPos[0]][expandPos[1]].die()
-                        emptyPos.append(expandPos)
+                    herbPos.append(expandPos)
                     grid[expandPos[0]][expandPos[1]]=Bicho(2, 0)
         else:
             if grid[iPos,jPos].size == 0 :
