@@ -87,7 +87,7 @@ def initGrid(nx, ny):
             if rd <= p1/(p1 + p2 + p3):
                 grid[i][j] = Bicho(1, size)
                 plantPos.append([i,j])
-            elif rd < (p1 + p2)/(p1 + p2 + p3):
+            elif rd <= (p1 + p2)/(p1 + p2 + p3):
                 grid[i][j] = Bicho(2, size)
                 herbPos.append([i, j])
             else:
@@ -99,7 +99,7 @@ def initGrid(nx, ny):
     #random.shuffle(carnPos)
     #random.shuffle(plantPos)
     
-    return grid, herbPos, carnPos, plantPos,emptyPos
+    return grid, herbPos, carnPos, plantPos, emptyPos
 
 #%%
 
@@ -114,17 +114,17 @@ def look4food(grid, i, j):
     random.shuffle(rdPosvec)
     
     for n in range(4):
-        rdPos=rdPosvec[n]
+        rdPos = rdPosvec[n]
         
         if rdPos == 0: #Procura de alimento na célula acima
             if grid[i - 1][j].type == (grid[i][j].type - 1):
-                if i-1 == -1 :
-                    return [grid.shape[0]-1,j]
+                if i - 1 == -1 :
+                    return [grid.shape[0] - 1, j]
                 return [i - 1, j]
         elif rdPos == 1: #Procura de alimento na célula à esquerda
             if grid[i][j - 1].type == (grid[i][j].type - 1):
-                if j-1 == -1 :
-                    return [i,grid.shape[1]-1]
+                if j - 1 == -1 :
+                    return [i,grid.shape[1] - 1]
                 return [i, j - 1]
         elif rdPos == 2: #Procura de alimento na célula abaixo
             if i + 1 == grid.shape[0]:
@@ -148,28 +148,28 @@ def look4food(grid, i, j):
     grid: rede do ecossistema
     i: linha onde se encontra o ser vivo
     j: coluna onde se encontra o ser vivo'''
-def look4space(grid,i,j):
+def look4space(grid, i, j):
     #ordena aleatoriamente as células onde se vai procurar espaço para expansão
     if grid[i][j].type == 2 :
-        possTypes=[0,1]
+        possTypes = [0, 1]
     else:
-        possTypes=[0,1,2]
+        possTypes = [0, 1, 2]
         
     rdPosvec = [0, 1, 2, 3]
     random.shuffle(rdPosvec)
     
     for n in range(4):
-        rdPos=rdPosvec[n]
+        rdPos = rdPosvec[n]
         
         if rdPos == 0: #Procura de espaço na célula acima
             if grid[i - 1][j].type in possTypes :
-                if i-1 == -1 :
-                    return [grid.shape[0]-1,j]
+                if i - 1 == -1 :
+                    return [grid.shape[0] - 1, j]
                 return [i - 1, j]
         elif rdPos == 1: #Procura de espaço na célula à esquerda
             if grid[i][j - 1].type in possTypes:
-                if j-1 == -1 :
-                    return [i,grid.shape[1]-1]
+                if j - 1 == -1 :
+                    return [i, grid.shape[1] - 1]
                 return [i, j - 1]
         elif rdPos == 2: #Procura de espaço na célula abaixo
             if i + 1 == grid.shape[0]:
@@ -189,44 +189,94 @@ def look4space(grid,i,j):
     return -1
 
 #%%
-    '''Esta função procura espaço vazio para mudança de posição para um determinado ser vivo nos primeiros vizinhos de von Neumann. Note-se que o alimento de um determinado tipo de ser vivo corresponde a (tipo - 1)
-    grid: rede do ecossistema
-    i: linha onde se encontra o ser vivo
-    j: coluna onde se encontra o ser vivo'''
-def look4empty(grid,i,j):
-    #ordena aleatoriamente as células onde se vai procurar espaço para expansão
-    rdPosvec = [0, 1, 2, 3]
-    random.shuffle(rdPosvec)
+
+def turn(tudo, bichoType):
+    grid = tudo[0]
+    herbPos = tudo[1]
+    carnPos = tudo[2]
+    plantPos = tudo[3]
+    emptyPos = tudo[4]
+    toRemove = []
     
-    for n in range(4):
-        rdPos=rdPosvec[n]
+    if bichoType == 2:
+        n = len(herbPos)
+        turnPos = herbPos
+        dietPos = plantPos
+    else: 
+        n = len(carnPos)
+        turnPos = carnPos
+        dietPos = herbPos
+    
+    for i in range(n):
+        print('__________________________________________________________________________________________')
+        iPos = turnPos[i][0]
+        jPos = turnPos[i][1]
+        print('BICHO DE COORDENADAS '+ str(turnPos[i]))
+        foodPos = look4food(grid, iPos, jPos)
+        #print("1: " + str(foodPos))
+        if (foodPos != -1): # caso o bicho coma
+            print('Comeu a célula '+str(foodPos) +  'do tipo ' + str(grid[foodPos[0]][foodPos[1]].type))
+            expandFlag = (grid[iPos, jPos].size == 2) #ativa para caso ele já fosse forte antes de comer
+            grid[iPos, jPos].grow()
+            grid[foodPos[0]][foodPos[1]].shrink()
+            if grid[foodPos[0]][foodPos[1]].type == 0:
+                dietPos.remove(foodPos) # apaga a planta que morreu
+                emptyPos.append(foodPos)
+            if expandFlag:
+                expandPos = look4space(grid, iPos, jPos)
+                print('Cresceu para '+str(expandPos) + ' do tipo ' + str(grid[expandPos[0]][expandPos[1]].type))
+                if grid[expandPos[0]][expandPos[1]].type == 0:
+                    emptyPos.remove(expandPos)
+                elif grid[expandPos[0]][expandPos[1]].type == 1:
+                    if bichoType == 2:
+                        dietPos.remove(expandPos)
+                    else:
+                        plantPos.remove(expandPos)   
+                elif grid[expandPos[0]][expandPos[1]].type == 2:
+                    dietPos.remove(expandPos)
+                turnPos.append(expandPos)
+                grid[expandPos[0]][expandPos[1]] = Bicho(bichoType, 0)
+        else:
+            grid[iPos, jPos].shrink()
+            if grid[iPos, jPos].type == 0:
+                print('MORREU EM '+str([iPos, jPos]))
+                emptyPos.append([iPos, jPos])
+                toRemove.append([iPos, jPos])
+            else:
+                movePos = look4space(grid, iPos, jPos)
+                if movePos != -1 :
+                    print('Moveu para ' + str(movePos))
+                    print('Antigo espaço '+str(grid[movePos[0]][movePos[1]].type))
+                    if grid[movePos[0]][movePos[1]].type == 0:
+                        emptyPos.remove(movePos)
+                    elif grid[movePos[0]][movePos[1]].type == 1:
+                        if bichoType == 2:
+                            dietPos.remove(movePos)
+                        else:
+                            plantPos.remove(movePos)   
+                    elif grid[movePos[0]][movePos[1]].type == 2:
+                        dietPos.remove(movePos)
+                    turnPos.append(movePos)
+                    emptyPos.append([iPos, jPos])
+                    toRemove.append([iPos, jPos])
+                    grid[movePos[0]][movePos[1]] = Bicho(grid[iPos, jPos].type,grid[iPos, jPos].size)
+                    grid[iPos, jPos].die()
+                    print('Novo espaço ' + str(grid[movePos[0]][movePos[1]].type))
+                    
+    for i in range(len(toRemove)): #limpar posições de antigos herbívoros
+        turnPos.remove(toRemove[i])
         
-        if rdPos == 0: #Procura de espaço na célula acima
-            if grid[i - 1][j].type==0 :
-                if i-1 == -1 :
-                    return [grid.shape[0]-1,j]
-                return [i - 1, j]
-        elif rdPos == 1: #Procura de espaço na célula à esquerda
-            if grid[i][j - 1].type==0:
-                if j-1 == -1 :
-                    return [i,grid.shape[1]-1]
-                return [i, j - 1]
-        elif rdPos == 2: #Procura de espaço na célula abaixo
-            if i + 1 == grid.shape[0]:
-                if grid[0][j].type==0:
-                    return [0, j]
-            else:
-                if grid[i+1][j].type==0:
-                    return [i + 1, j]
-        else: #Procura de espaço na célula à direita
-            if j + 1 == grid.shape[1]:
-                if grid[i][0].type==0:
-                    return [i, 0]
-            else:
-                if grid[i][j+1].type==0:
-                    return [i, j + 1]
-    print('não ha comida')
-    return -1
+    if bichoType == 2:
+        
+        herbPos = turnPos
+        
+        plantPos = dietPos
+    else: 
+        carnPos = turnPos
+        herbPos = dietPos
+        
+    return grid, herbPos, carnPos, plantPos, emptyPos
+    
 
 #%%
 
@@ -237,125 +287,30 @@ def look4empty(grid,i,j):
     
     FUNÇÃO NÃO TERMINADA!! FALTA IR ALTERANDO AS MATRIZES COM AS POSIÇÕES DOS DIFERENTES TIPOS DE SERES VIVOS E ATUALIZAR A FUNÇÃO look4food PARA SER MAIS GERAL'''
 
-# =============================================================================
-# def iteration(gridInfo, nx, ny):
-#     
-#     for i in range(len(gridInfo[1])):
-#         foodPos = look4food(gridInfo[0], gridInfo[1][i, 0], gridInfo[1][i, 1])
-#         if foodPos != 'No Food':
-#             gridInfo[0][foodPos[0], foodPos[1]].shrink()
-#             if gridInfo[0][gridInfo[1][i, 0], gridInfo[1][i, 1]].size < 2:
-#                 gridInfo[0][gridInfo[1][i, 0], gridInfo[1][i, 1]].grow()
-#             else:
-#                 newHerb = look4food(gridInfo[0], gridInfo[1][i, 0], gridInfo[1][i, 1])
-#                 gridInfo[0][newHerb[0], newHerb[1]].changeType(2)
-#         else:
-#             gridInfo[0][gridInfo[1][i, 0], gridInfo[1][i, 1]].shrink()
-#             if gridInfo[0][gridInfo[1][i, 0], gridInfo[1][i, 1]].type == 0:
-#                 newPos = look4food(gridInfo[0], gridInfo[1][i, 0], gridInfo[1][i, 1])
-#                 if newPos != 'No Food':
-#                     gridInfo[0][gridInfo[1][i, 0], gridInfo[1][i, 1]].changeType(0)
-#                     gridInfo[0][newPos[0], newPos[1]].changeType(2)
-#                     
-#     for i in range(len(gridInfo[2])):
-#         foodPos = look4food(gridInfo[0], gridInfo[2][i, 0], gridInfo[2][i, 1])
-#         if foodPos != 'No Food':
-#             gridInfo[0][foodPos[0], foodPos[1]].shrink()
-#             if gridInfo[0][gridInfo[2][i, 0], gridInfo[2][i, 1]].size < 2:
-#                 gridInfo[0][gridInfo[2][i, 0], gridInfo[2][i, 1]].grow()
-#             else:
-#                 newCarn = look4food(gridInfo[0], gridInfo[2][i, 0], gridInfo[2][i, 1])
-#                 gridInfo[0][newCarn[0], newCarn[1]].changeType(3)
-#         else:
-#             gridInfo[0][gridInfo[2][i, 0], gridInfo[2][i, 1]].shrink()
-#             if gridInfo[0][gridInfo[2][i, 0], gridInfo[2][i, 1]].type == 0:
-#                 newPos = look4food(gridInfo[0], gridInfo[2][i, 0], gridInfo[2][i, 1])
-#                 if newPos != 'No Food':
-#                     gridInfo[0][gridInfo[2][i, 0], gridInfo[2][i, 1]].changeType(0)
-#                     gridInfo[0][newPos[0], newPos[1]].changeType(3)
-#                     
-#     for i in range(len(gridInfo[3])):
-#         gridInfo[0][gridInfo[3][i, 0], gridInfo[3][i, 1]].grow()
-#         
-#     for i in range(nx):
-#         for j in range(ny):
-#             if gridInfo[0][i, j].type == 0:
-#                 gridInfo[0][i, j].changeType(1)
-# 
-# =============================================================================
-#%%
 def iteration(tudo):
-    grid=tudo[0]
-    plantPos=tudo[3]
-    herbPos=tudo[1]
-    carnPos=tudo[2]
-    emptyPos=tudo[4]
-    toRemove=[]
-    for i in range(len(herbPos)):
-        iPos=herbPos[i][0]
-        jPos=herbPos[i][1]
-        foodPos=look4food(grid, iPos, jPos)
-        if (foodPos != -1): # caso o bicho coma
-            expandFlag= (grid[iPos,jPos].size==2) #ativa para caso ele já fosse forte antes de comer
-            grid[iPos,jPos].grow()
-            grid[foodPos[0]][foodPos[1]].shrink
-            if grid[foodPos[0]][foodPos[1]].type == 0:
-                plantPos.remove(foodPos) # apaga a planta que morreu
-                emptyPos.append(foodPos)
-            if expandFlag:
-                expandPos=look4space(grid, iPos, jPos)
-                if expandPos != -1 :
-                    if grid[expandPos[0]][expandPos[1]].type == 0 :
-                        emptyPos.remove(expandPos)
-                    else:
-                        plantPos.remove(expandPos)
-                    herbPos.append(expandPos)
-                    grid[expandPos[0]][expandPos[1]]=Bicho(2, 0)
-        else:
-            if grid[iPos,jPos].size == 0 :
-                grid[iPos,jPos].die()
-                emptyPos.append([iPos,jPos])
-                toRemove.append([iPos,jPos])
-            else:
-                print("QUER MOVER")
-                movePos=look4space(grid, iPos, jPos)
-                if movePos != -1 :
-                    herbPos.append(movePos)
-                    toRemove.append(movePos)
-                    grid[movePos[0]][movePos[1]]=grid[iPos,jPos]
-                    grid[iPos,jPos].die()
-                    print('MOVEU!!!')
-                
-                
-                
-    for i in range(len(toRemove)):#limpar posições de antigos herbívoros
-        herbPos.remove(toRemove[i])
-    toRemove.clear()
-        
+    print('____________Herbívoros comem_____________')
+    tudo = turn(tudo, 2)
+    print('____________Carnívoros comem_______________')
+    tudo = turn(tudo, 3)
     
-                        
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-#%%
-#FUNÇAO PRINCIPAL CHAMA-SE CIRCLE OF LIFE
-tudo=initGrid(25,25)
-grid=tudo[0]
-plantPos=tudo[3]
-herbPos=tudo[1]
-carnPos=tudo[2]
-emptyPos=tudo[4]
-iteration(tudo)
-#print(look4food(grid,0,0))
+    for i in range(len(tudo[3])):
+        tudo[0][tudo[3][i][0], tudo[3][i][1]].grow()
 
+    for i in range(len(tudo[4])):
+        tudo[0][tudo[4][i][0], tudo[4][i][1]].changeType(1)
+        tudo[3].append(tudo[4][i])
+    tudo[4].clear()
+    
+#%%
+
+def circleOfLife(nx, ny, nIterations):
+    tudo = initGrid(25, 25)
+    for i in range(nIterations):
+        iteration(tudo)
+    
+    return tudo
+
+#%%
+
+tudo = circleOfLife(25, 25, 10)
 
