@@ -299,16 +299,64 @@ def circleOfLife(nx, ny, nIterations):
     nPlant = np.zeros(nIterations + 1, dtype = int) 
     nHerb = np.zeros(nIterations + 1, dtype = int) 
     nCarn = np.zeros(nIterations + 1, dtype = int)
+    hPlant = np.zeros((nIterations + 1, 3), dtype = int)
+    hHerb = np.zeros((nIterations + 1, 3), dtype = int)
+    hCarn = np.zeros((nIterations + 1, 3), dtype = int)
     
     nPlant[0] = len(tudo[3])
     nHerb[0] = len(tudo[1])
     nCarn[0] = len(tudo[2])
     
+    for j in range(len(tudo[3])):
+        if tudo[0][tudo[3][j][0], tudo[3][j][1]].size == 0:
+            hPlant[0][0] += 1
+        elif tudo[0][tudo[3][j][0], tudo[3][j][1]].size == 1:
+            hPlant[0][1] += 1
+        else:
+            hPlant[0][2] += 1
+            
+    for j in range(len(tudo[1])):
+        if tudo[0][tudo[1][j][0], tudo[1][j][1]].size == 0:
+            hHerb[0][0] += 1
+        elif tudo[0][tudo[1][j][0], tudo[1][j][1]].size == 1:
+            hHerb[0][1] += 1
+        else:
+            hHerb[0][2] += 1
+                
+    for j in range(len(tudo[2])):
+        if tudo[0][tudo[2][j][0], tudo[2][j][1]].size == 0:
+            hCarn[0][0] += 1
+        elif tudo[0][tudo[2][j][0], tudo[2][j][1]].size == 1:
+            hCarn[0][1] += 1
+        else:
+            hCarn[0][2] += 1
+            
     for i in range(nIterations):
         iteration(tudo)
         nPlant[i + 1] = len(tudo[3])
         nHerb[i + 1] = len(tudo[1])
         nCarn[i + 1] = len(tudo[2])
+        for j in range(len(tudo[3])):
+            if tudo[0][tudo[3][j][0], tudo[3][j][1]].size == 0:
+                hPlant[i + 1][0] += 1
+            elif tudo[0][tudo[3][j][0], tudo[3][j][1]].size == 1:
+                hPlant[i + 1][1] += 1
+            else:
+                hPlant[i + 1][2] += 1
+        for j in range(len(tudo[1])):
+            if tudo[0][tudo[1][j][0], tudo[1][j][1]].size == 0:
+                hHerb[i + 1][0] += 1
+            elif tudo[0][tudo[1][j][0], tudo[1][j][1]].size == 1:
+                hHerb[i + 1][1] += 1
+            else:
+                hHerb[i + 1][2] += 1
+        for j in range(len(tudo[2])):
+            if tudo[0][tudo[2][j][0], tudo[2][j][1]].size == 0:
+                hCarn[i + 1][0] += 1
+            elif tudo[0][tudo[2][j][0], tudo[2][j][1]].size == 1:
+                hCarn[i + 1][1] += 1
+            else:
+                hCarn[i + 1][2] += 1
         
     tudo2 = initGrid(nx, ny, 9, 3, 0)
     nPlant2 = np.zeros(nIterations + 1, dtype = int) 
@@ -323,14 +371,29 @@ def circleOfLife(nx, ny, nIterations):
         nHerb2[i + 1] = len(tudo2[1])
         
     fig = plt.figure()
-    axS = fig.add_subplot(1, 2, 1)
+    axS = fig.add_subplot(3, 2, 1)
     axS.plot(nPlant, 'b-', label = "Plantas")
     axS.plot(nHerb, 'g-', label = "Herbívoros")
     axS.plot(nCarn, 'r-', label = "Carnívoros")
     plt.legend()
-    axS2 = fig.add_subplot(1, 2, 2)
+    axS2 = fig.add_subplot(3, 2, 2)
     axS2.plot(nPlant2, 'b-', label = "Plantas")
     axS2.plot(nHerb2, 'g-', label = "Herbívoros")
+    plt.legend()
+    axS3 = fig.add_subplot(3, 2, 3)
+    axS3.plot(hPlant[:][0], 'b-', label = "Fraco")
+    axS3.plot(hPlant[:][1], 'g-', label = "Médio")
+    axS3.plot(hPlant[:][2], 'r-', label = "Forte")
+    plt.legend()
+    axS4 = fig.add_subplot(3, 2, 4)
+    axS4.plot(hHerb[:][0], 'b-', label = "Fraco")
+    axS4.plot(hHerb[:][1], 'g-', label = "Médio")
+    axS4.plot(hHerb[:][2], 'r-', label = "Forte")
+    plt.legend()
+    axS5 = fig.add_subplot(3, 2, 5)
+    axS5.plot(hCarn[:][0], 'b-', label = "Fraco")
+    axS5.plot(hCarn[:][1], 'g-', label = "Médio")
+    axS5.plot(hCarn[:][2], 'r-', label = "Forte")
     plt.legend()
     fig.set_size_inches(12, 6)
         
@@ -338,5 +401,5 @@ def circleOfLife(nx, ny, nIterations):
 
 #%%
 
-tudo = circleOfLife(50, 50, 500)
+tudo = circleOfLife(25, 25, 250)
 
