@@ -28,6 +28,7 @@
 %matplotlib qt
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.widgets import Slider, Button
 import random
 
 #%%
@@ -296,16 +297,18 @@ def iteration(tudo):
 
 def circleOfLife(nx, ny, nIterations):
     tudo = initGrid(nx, ny, 9, 3, 1)
-    nPlant = np.zeros(nIterations + 1, dtype = int) 
-    nHerb = np.zeros(nIterations + 1, dtype = int) 
-    nCarn = np.zeros(nIterations + 1, dtype = int)
-    hPlant = np.zeros((nIterations + 1, 3), dtype = int)
-    hHerb = np.zeros((nIterations + 1, 3), dtype = int)
-    hCarn = np.zeros((nIterations + 1, 3), dtype = int)
+    nPlant = np.zeros(nIterations + 1, dtype = float) 
+    nHerb = np.zeros(nIterations + 1, dtype = float) 
+    nCarn = np.zeros(nIterations + 1, dtype = float)
+    hPlant = np.zeros((nIterations + 1, 3), dtype = float)
+    hHerb = np.zeros((nIterations + 1, 3), dtype = float)
+    hCarn = np.zeros((nIterations + 1, 3), dtype = float)
+    ecossistemas = []
+    ecossistemas.append(tudo[0])
     
-    nPlant[0] = len(tudo[3])
-    nHerb[0] = len(tudo[1])
-    nCarn[0] = len(tudo[2])
+    nPlant[0] = len(tudo[3])/(nx * ny) * 100
+    nHerb[0] = len(tudo[1])/(nx * ny) * 100
+    nCarn[0] = len(tudo[2])/(nx * ny) * 100
     
     for j in range(len(tudo[3])):
         if tudo[0][tudo[3][j][0], tudo[3][j][1]].size == 0:
@@ -314,6 +317,7 @@ def circleOfLife(nx, ny, nIterations):
             hPlant[0][1] += 1
         else:
             hPlant[0][2] += 1
+    hPlant[0] = hPlant[0]/len(tudo[3]) * 100
             
     for j in range(len(tudo[1])):
         if tudo[0][tudo[1][j][0], tudo[1][j][1]].size == 0:
@@ -322,6 +326,7 @@ def circleOfLife(nx, ny, nIterations):
             hHerb[0][1] += 1
         else:
             hHerb[0][2] += 1
+    hHerb[0] = hHerb[0]/len(tudo[1]) * 100
                 
     for j in range(len(tudo[2])):
         if tudo[0][tudo[2][j][0], tudo[2][j][1]].size == 0:
@@ -330,12 +335,14 @@ def circleOfLife(nx, ny, nIterations):
             hCarn[0][1] += 1
         else:
             hCarn[0][2] += 1
+    hCarn[0] = hCarn[0]/len(tudo[2]) * 100
             
     for i in range(nIterations):
         iteration(tudo)
-        nPlant[i + 1] = len(tudo[3])
-        nHerb[i + 1] = len(tudo[1])
-        nCarn[i + 1] = len(tudo[2])
+        ecossistemas.append(tudo[0])
+        nPlant[i + 1] = len(tudo[3])/(nx * ny) * 100
+        nHerb[i + 1] = len(tudo[1])/(nx * ny) * 100
+        nCarn[i + 1] = len(tudo[2])/(nx * ny) * 100
         for j in range(len(tudo[3])):
             if tudo[0][tudo[3][j][0], tudo[3][j][1]].size == 0:
                 hPlant[i + 1][0] += 1
@@ -343,6 +350,7 @@ def circleOfLife(nx, ny, nIterations):
                 hPlant[i + 1][1] += 1
             else:
                 hPlant[i + 1][2] += 1
+        hPlant[i + 1] = hPlant[i + 1]/len(tudo[3]) * 100
         for j in range(len(tudo[1])):
             if tudo[0][tudo[1][j][0], tudo[1][j][1]].size == 0:
                 hHerb[i + 1][0] += 1
@@ -350,6 +358,7 @@ def circleOfLife(nx, ny, nIterations):
                 hHerb[i + 1][1] += 1
             else:
                 hHerb[i + 1][2] += 1
+        hHerb[i + 1] = hHerb[i + 1]/len(tudo[1]) * 100
         for j in range(len(tudo[2])):
             if tudo[0][tudo[2][j][0], tudo[2][j][1]].size == 0:
                 hCarn[i + 1][0] += 1
@@ -357,49 +366,120 @@ def circleOfLife(nx, ny, nIterations):
                 hCarn[i + 1][1] += 1
             else:
                 hCarn[i + 1][2] += 1
+        hCarn[i + 1] = hCarn[i + 1]/len(tudo[2]) * 100
         
     tudo2 = initGrid(nx, ny, 9, 3, 0)
-    nPlant2 = np.zeros(nIterations + 1, dtype = int) 
-    nHerb2 = np.zeros(nIterations + 1, dtype = int) 
+    nPlant2 = np.zeros(nIterations + 1, dtype = float) 
+    nHerb2 = np.zeros(nIterations + 1, dtype = float) 
+    hPlant2 = np.zeros((nIterations + 1, 3), dtype = float)
+    hHerb2 = np.zeros((nIterations + 1, 3), dtype = float)
+    ecossistemas2 = []
+    ecossistemas2.append(tudo2[0])
     
-    nPlant2[0] = len(tudo2[3])
-    nHerb2[0] = len(tudo2[1])
+    nPlant2[0] = len(tudo2[3])/(nx * ny) * 100
+    nHerb2[0] = len(tudo2[1])/(nx * ny) * 100
+    
+    for j in range(len(tudo2[3])):
+        if tudo2[0][tudo2[3][j][0], tudo2[3][j][1]].size == 0:
+            hPlant2[0][0] += 1
+        elif tudo2[0][tudo2[3][j][0], tudo2[3][j][1]].size == 1:
+            hPlant2[0][1] += 1
+        else:
+            hPlant2[0][2] += 1
+    hPlant2[0] = hPlant2[0]/len(tudo2[3]) * 100
+            
+    for j in range(len(tudo2[1])):
+        if tudo2[0][tudo2[1][j][0], tudo2[1][j][1]].size == 0:
+            hHerb2[0][0] += 1
+        elif tudo2[0][tudo2[1][j][0], tudo2[1][j][1]].size == 1:
+            hHerb2[0][1] += 1
+        else:
+            hHerb2[0][2] += 1
+    hHerb2[0] = hHerb2[0]/len(tudo2[1]) * 100
     
     for i in range(nIterations):
         iteration(tudo2)
-        nPlant2[i + 1] = len(tudo2[3])
-        nHerb2[i + 1] = len(tudo2[1])
-        
+        ecossistemas2.append(tudo2[0])
+        nPlant2[i + 1] = len(tudo2[3])/(nx * ny) * 100
+        nHerb2[i + 1] = len(tudo2[1])/(nx * ny) * 100
+        for j in range(len(tudo2[3])):
+            if tudo2[0][tudo2[3][j][0], tudo2[3][j][1]].size == 0:
+                hPlant2[i + 1][0] += 1
+            elif tudo2[0][tudo2[3][j][0], tudo2[3][j][1]].size == 1:
+                hPlant2[i + 1][1] += 1
+            else:
+                hPlant2[i + 1][2] += 1
+        hPlant2[i + 1] = hPlant2[i + 1]/len(tudo2[3]) * 100                
+        for j in range(len(tudo2[1])):
+            if tudo2[0][tudo2[1][j][0], tudo2[1][j][1]].size == 0:
+                hHerb2[i + 1][0] += 1
+            elif tudo2[0][tudo2[1][j][0], tudo2[1][j][1]].size == 1:
+                hHerb2[i + 1][1] += 1
+            else:
+                hHerb2[i + 1][2] += 1
+        hHerb2[i + 1] = hHerb2[i + 1]/len(tudo2[1]) * 100
+    
+    #PLOTS
     fig = plt.figure()
-    axS = fig.add_subplot(3, 2, 1)
+    axS = fig.add_subplot(4, 2, 1)
     axS.plot(nPlant, 'b-', label = "Plantas")
     axS.plot(nHerb, 'g-', label = "Herbívoros")
     axS.plot(nCarn, 'r-', label = "Carnívoros")
+    axS.set_title('Simulação c/ Carnívoros')
+    axS.set_ylabel('%')
+    axS.set_xlabel('Número da Iteração')
     plt.legend()
-    axS2 = fig.add_subplot(3, 2, 2)
+    axS2 = fig.add_subplot(4, 2, 2)
     axS2.plot(nPlant2, 'b-', label = "Plantas")
     axS2.plot(nHerb2, 'g-', label = "Herbívoros")
+    axS2.set_title('Simulação s/ Carnívoros')
+    axS2.set_ylabel('%')
+    axS2.set_xlabel('Número da Iteração')
     plt.legend()
-    axS3 = fig.add_subplot(3, 2, 3)
-    axS3.plot(hPlant[:][0], 'b-', label = "Fraco")
-    axS3.plot(hPlant[:][1], 'g-', label = "Médio")
-    axS3.plot(hPlant[:][2], 'r-', label = "Forte")
+    axS3 = fig.add_subplot(4, 2, 3)
+    axS3.plot(hPlant[:, 0], 'b-', label = "Fraco")
+    axS3.plot(hPlant[:, 1], 'g-', label = "Médio")
+    axS3.plot(hPlant[:, 2], 'r-', label = "Forte")
+    axS3.set_title('População de Plantas por Nível')
+    axS3.set_ylabel('%')
+    axS3.set_xlabel('Número da Iteração')
     plt.legend()
-    axS4 = fig.add_subplot(3, 2, 4)
-    axS4.plot(hHerb[:][0], 'b-', label = "Fraco")
-    axS4.plot(hHerb[:][1], 'g-', label = "Médio")
-    axS4.plot(hHerb[:][2], 'r-', label = "Forte")
+    axS4 = fig.add_subplot(4, 2, 5)
+    axS4.plot(hHerb[:, 0], 'b-', label = "Fraco")
+    axS4.plot(hHerb[:, 1], 'g-', label = "Médio")
+    axS4.plot(hHerb[:, 2], 'r-', label = "Forte")
+    axS4.set_title('População de Herbívoros por Nível')
+    axS4.set_ylabel('%')
+    axS4.set_xlabel('Número da Iteração')
     plt.legend()
-    axS5 = fig.add_subplot(3, 2, 5)
-    axS5.plot(hCarn[:][0], 'b-', label = "Fraco")
-    axS5.plot(hCarn[:][1], 'g-', label = "Médio")
-    axS5.plot(hCarn[:][2], 'r-', label = "Forte")
+    axS5 = fig.add_subplot(4, 2, 7)
+    axS5.plot(hCarn[:, 0], 'b-', label = "Fraco")
+    axS5.plot(hCarn[:, 1], 'g-', label = "Médio")
+    axS5.plot(hCarn[:, 2], 'r-', label = "Forte")
+    axS5.set_title('População de Carnívoros por Nível')
+    axS5.set_ylabel('%')
+    axS5.set_xlabel('Número da Iteração')
+    plt.legend()
+    axS6 = fig.add_subplot(4, 2, 4)
+    axS6.plot(hPlant2[:, 0], 'b-', label = "Fraco")
+    axS6.plot(hPlant2[:, 1], 'g-', label = "Médio")
+    axS6.plot(hPlant2[:, 2], 'r-', label = "Forte")
+    axS6.set_title('População de Plantas por Nível')
+    axS6.set_ylabel('%')
+    axS6.set_xlabel('Número da Iteração')
+    plt.legend()
+    axS7 = fig.add_subplot(4, 2, 6)
+    axS7.plot(hHerb2[:, 0], 'b-', label = "Fraco")
+    axS7.plot(hHerb2[:, 1], 'g-', label = "Médio")
+    axS7.plot(hHerb2[:, 2], 'r-', label = "Forte")
+    axS7.set_title('População de Herbívoros por Nível')
+    axS7.set_ylabel('%')
+    axS7.set_xlabel('Número da Iteração')
     plt.legend()
     fig.set_size_inches(12, 6)
         
-    return tudo
+    return tudo, tudo2
 
 #%%
 
 tudo = circleOfLife(25, 25, 250)
-
