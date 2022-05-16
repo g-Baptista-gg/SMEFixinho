@@ -208,14 +208,13 @@ def turn(tudo, bichoType):
         dietPos = herbPos
     
     for i in range(n):
-        print('__________________________________________________________________________________________')
+
         iPos = turnPos[i][0]
         jPos = turnPos[i][1]
-        print('BICHO DE COORDENADAS '+ str(turnPos[i]))
+
         foodPos = look4food(grid, iPos, jPos)
-        #print("1: " + str(foodPos))
+
         if (foodPos != -1): # caso o bicho coma
-            print('Comeu a célula '+str(foodPos) +  'do tipo ' + str(grid[foodPos[0]][foodPos[1]].type))
             expandFlag = (grid[iPos, jPos].size == 2) #ativa para caso ele já fosse forte antes de comer
             grid[iPos, jPos].grow()
             grid[foodPos[0]][foodPos[1]].shrink()
@@ -224,7 +223,6 @@ def turn(tudo, bichoType):
                 emptyPos.append(foodPos)
             if expandFlag:
                 expandPos = look4space(grid, iPos, jPos)
-                print('Cresceu para '+str(expandPos) + ' do tipo ' + str(grid[expandPos[0]][expandPos[1]].type))
                 if grid[expandPos[0]][expandPos[1]].type == 0:
                     emptyPos.remove(expandPos)
                 elif grid[expandPos[0]][expandPos[1]].type == 1:
@@ -239,14 +237,11 @@ def turn(tudo, bichoType):
         else:
             grid[iPos, jPos].shrink()
             if grid[iPos, jPos].type == 0:
-                print('MORREU EM '+str([iPos, jPos]))
                 emptyPos.append([iPos, jPos])
                 toRemove.append([iPos, jPos])
             else:
                 movePos = look4space(grid, iPos, jPos)
                 if movePos != -1 :
-                    print('Moveu para ' + str(movePos))
-                    print('Antigo espaço '+str(grid[movePos[0]][movePos[1]].type))
                     if grid[movePos[0]][movePos[1]].type == 0:
                         emptyPos.remove(movePos)
                     elif grid[movePos[0]][movePos[1]].type == 1:
@@ -261,7 +256,6 @@ def turn(tudo, bichoType):
                     toRemove.append([iPos, jPos])
                     grid[movePos[0]][movePos[1]] = Bicho(grid[iPos, jPos].type,grid[iPos, jPos].size)
                     grid[iPos, jPos].die()
-                    print('Novo espaço ' + str(grid[movePos[0]][movePos[1]].type))
                     
     for i in range(len(toRemove)): #limpar posições de antigos herbívoros
         turnPos.remove(toRemove[i])
@@ -288,9 +282,7 @@ def turn(tudo, bichoType):
     FUNÇÃO NÃO TERMINADA!! FALTA IR ALTERANDO AS MATRIZES COM AS POSIÇÕES DOS DIFERENTES TIPOS DE SERES VIVOS E ATUALIZAR A FUNÇÃO look4food PARA SER MAIS GERAL'''
 
 def iteration(tudo):
-    print('____________Herbívoros comem_____________')
     tudo = turn(tudo, 2)
-    print('____________Carnívoros comem_______________')
     tudo = turn(tudo, 3)
     
     for i in range(len(tudo[3])):
@@ -305,12 +297,31 @@ def iteration(tudo):
 
 def circleOfLife(nx, ny, nIterations):
     tudo = initGrid(25, 25)
+    nPlant = np.zeros(nIterations + 1, dtype = int) 
+    nHerb = np.zeros(nIterations + 1, dtype = int) 
+    nCarn = np.zeros(nIterations + 1, dtype = int)
+    
+    nPlant[0] = len(tudo[3])
+    nHerb[0] = len(tudo[1])
+    nCarn[0] = len(tudo[2])
+    
     for i in range(nIterations):
         iteration(tudo)
-    
+        nPlant[i + 1] = len(tudo[3])
+        nHerb[i + 1] = len(tudo[1])
+        nCarn[i + 1] = len(tudo[2])
+        
+    fig = plt.figure()
+    axS = fig.add_subplot(1, 2, 1)
+    axS.plot(nPlant, 'b-', label = "Plantas")
+    axS.plot(nHerb, 'g-', label = "Herbívoros")
+    axS.plot(nCarn, 'r-', label = "Carnívoros")
+    plt.legend()
+    fig.set_size_inches(12, 6)
+        
     return tudo
 
 #%%
 
-tudo = circleOfLife(25, 25, 10)
+tudo = circleOfLife(50, 50, 500)
 
