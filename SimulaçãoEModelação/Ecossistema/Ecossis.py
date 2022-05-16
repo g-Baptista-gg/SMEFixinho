@@ -65,19 +65,18 @@ class Bicho:
 
     '''Inicia a estrutura de dados que contém a informação relacionada com a evolução da rede
     nx: número de linhas da rede
-    ny: número de colunas da rede'''
+    ny: número de colunas da rede
+    p1: plantas
+    p2: herbívoros
+    p3: carnívoros'''
 
-def initGrid(nx, ny):
+def initGrid(nx, ny, p1, p2, p3):
     grid = np.zeros((nx, ny), dtype = object) #Inicia a rede
     
     herbPos = [] #Cria uma lista para as posições dos herbívoros da rede
     carnPos = [] #Cria uma lista para as posições dos carnívoros da rede
     plantPos = [] #Cria uma lista para as posições das plantas da rede
     emptyPos=[]
-    
-    p1 = 9 #Peso relativo de plantas na inicialização da rede
-    p2 = 3 #Peso relativo de herbívoros na inicialização da rede
-    p3 = 1 #Peso relativo de carnívoros na inicialização da rede
     
     #Preenchimento da rede
     for i in range(nx):
@@ -296,7 +295,7 @@ def iteration(tudo):
 #%%
 
 def circleOfLife(nx, ny, nIterations):
-    tudo = initGrid(25, 25)
+    tudo = initGrid(nx, ny, 9, 3, 1)
     nPlant = np.zeros(nIterations + 1, dtype = int) 
     nHerb = np.zeros(nIterations + 1, dtype = int) 
     nCarn = np.zeros(nIterations + 1, dtype = int)
@@ -311,11 +310,27 @@ def circleOfLife(nx, ny, nIterations):
         nHerb[i + 1] = len(tudo[1])
         nCarn[i + 1] = len(tudo[2])
         
+    tudo2 = initGrid(nx, ny, 9, 3, 0)
+    nPlant2 = np.zeros(nIterations + 1, dtype = int) 
+    nHerb2 = np.zeros(nIterations + 1, dtype = int) 
+    
+    nPlant2[0] = len(tudo2[3])
+    nHerb2[0] = len(tudo2[1])
+    
+    for i in range(nIterations):
+        iteration(tudo2)
+        nPlant2[i + 1] = len(tudo2[3])
+        nHerb2[i + 1] = len(tudo2[1])
+        
     fig = plt.figure()
     axS = fig.add_subplot(1, 2, 1)
     axS.plot(nPlant, 'b-', label = "Plantas")
     axS.plot(nHerb, 'g-', label = "Herbívoros")
     axS.plot(nCarn, 'r-', label = "Carnívoros")
+    plt.legend()
+    axS2 = fig.add_subplot(1, 2, 2)
+    axS2.plot(nPlant2, 'b-', label = "Plantas")
+    axS2.plot(nHerb2, 'g-', label = "Herbívoros")
     plt.legend()
     fig.set_size_inches(12, 6)
         
