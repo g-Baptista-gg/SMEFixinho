@@ -95,9 +95,9 @@ def initGrid(nx, ny, p1, p2, p3):
                 carnPos.append([i, j])
     
     #Ordenação aleatória dos vetores posição de cada uma das listas
-    #random.shuffle(herbPos)
-    #random.shuffle(carnPos)
-    #random.shuffle(plantPos)
+    random.shuffle(herbPos)
+    random.shuffle(carnPos)
+    random.shuffle(plantPos)
     
     return grid, herbPos, carnPos, plantPos, emptyPos
 
@@ -292,6 +292,8 @@ def iteration(tudo):
         tudo[0][tudo[4][i][0], tudo[4][i][1]].changeType(1)
         tudo[3].append(tudo[4][i])
     tudo[4].clear()
+    random.shuffle(tudo[1])
+    random.shuffle(tudo[2])
     
 #%%
 
@@ -482,4 +484,4 @@ def circleOfLife(nx, ny, nIterations):
 
 #%%
 
-tudo = circleOfLife(25, 25, 250)
+tudo = circleOfLife(25, 25, 500)
