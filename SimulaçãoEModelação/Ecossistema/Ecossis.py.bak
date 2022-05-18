@@ -501,9 +501,12 @@ def circleOfLife(nx, ny, nIterations):
 
 #%%
 
+<<<<<<< HEAD
 
-tudo = circleOfLife(50, 50, 250)
-
+tudo = circleOfLife(25, 25, 250)
+=======
+tudo = circleOfLife(50, 50, 500)
+>>>>>>> d3ce03e8d7b8cd78875ed3a93e235774e61395e7
 fig1 = plt.figure()
 ax1 = fig1.add_subplot(1, 2, 1)
 ims = []
@@ -524,4 +527,9 @@ for i in range(len(tudo[3])):
     ims2.append([im2])
 ani2 = animation.ArtistAnimation(fig1, ims2, interval = 100, blit = True, repeat_delay = 1000)
 plt.colorbar(im2)
+<<<<<<< HEAD
 plt.show()
+=======
+
+plt.show()
+>>>>>>> d3ce03e8d7b8cd78875ed3a93e235774e61395e7
