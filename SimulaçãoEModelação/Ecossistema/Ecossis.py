@@ -339,6 +339,7 @@ def getLevel(tudo, bichoType):
     hHerb2: array com a distribuição dos níveis de herbívoros ao longo da simulação sem carnívoros'''
 
 def drawGraphs(sim1, sim2):
+    plt.style.use('dark_background')
     fig = plt.figure()
     axS = fig.add_subplot(4, 2, 1)
     axS.plot(sim1[5], 'b-', label = "Plantas")
@@ -460,7 +461,7 @@ tudo, tudo2 = simulations(50, 50, 500)
 #%%
 
 '''Esta parte do código é a responsável pela animação do estado dos ecossistemas ao longo das simulações.'''
-plt.style.use('dark_background')
+
 fig1 = plt.figure()
 ax1 = fig1.add_subplot(1, 2, 1)
 ims = []
