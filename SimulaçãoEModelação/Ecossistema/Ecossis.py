@@ -98,7 +98,7 @@ def initGrid(nx, ny, p1, p2, p3, nIterations):
     for i in range(nx):
         for j in range(ny):
             rd = np.random.rand()
-            size = np.random.randint(2)
+            size = np.random.randint(3)
             if rd <= p1/(p1 + p2 + p3):
                 grid[i][j] = Bicho(1, size)
                 plantPos.append([i, j])
@@ -460,12 +460,12 @@ tudo, tudo2 = simulations(50, 50, 500)
 #%%
 
 '''Esta parte do código é a responsável pela animação do estado dos ecossistemas ao longo das simulações.'''
-
+plt.style.use('dark_background')
 fig1 = plt.figure()
 ax1 = fig1.add_subplot(1, 2, 1)
 ims = []
 for i in range(len(tudo[11])):
-    im = ax1.imshow(tudo[11][i], animated = True, aspect = 'auto', vmin = 1, vmax = 3)
+    im = ax1.imshow(tudo[11][i],cmap='summer', animated = True, aspect = 'auto', vmin = 1, vmax = 3)
     if i == 0:
         ax1.imshow(tudo[11][i], aspect = 'auto', vmin = 1, vmax = 3)
     ims.append([im])
@@ -475,7 +475,7 @@ plt.colorbar(im)
 ax2 = fig1.add_subplot(1, 2, 2)
 ims2 = []
 for i in range(len(tudo2[11])):
-    im2 = ax2.imshow(tudo2[11][i], animated = True, aspect = 'auto', vmin = 1, vmax = 3)
+    im2 = ax2.imshow(tudo2[11][i],cmap='summer', animated = True, aspect = 'auto', vmin = 1, vmax = 3)
     if i == 0:
         ax2.imshow(tudo2[11][i], aspect = 'auto', vmin = 1, vmax = 3)
     ims2.append([im2])

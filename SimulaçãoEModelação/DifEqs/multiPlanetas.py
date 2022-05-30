@@ -44,7 +44,7 @@ def initialize(size):
     planets=np.append(planets,Planet('Sun', 1, np.array([0.,0.]), np.array([0.,0.]), size))
     
     planets=np.append(planets,Planet('Venus',0.815*1/332946 , np.array([0.7,0.]), np.array([0.,2 * np.pi*0.7/(225/365)]), size))
-    
+    planets=np.append(planets,Planet('Black Hole',1, np.array([-5.,0.]), np.array([0.,0.]), size))
 
     
     
@@ -111,10 +111,12 @@ lMerc, =ax.plot([],[],'-',color='grey')
 oVenus, =ax.plot([],[],'o',color='green',label='Venus')
 lVenus, =ax.plot([],[],'-',color='green')
 
+oHole, =ax.plot([],[],'o',color='black',label='Black Hole')
+
 oS, =ax.plot(0,0,'o',color='yellow',label='SOL')
+
     
-Tdatax,Tdatay,Jdatax,Jdatay,Mdatax,Mdatay,Mercdatax,Mercdatay,Venusdatax,Venusdatay=[],[],[],[],[],[],[],[],[],[] 
-Sundatax,Sundatay=[],[]
+Tdatax,Tdatay,Jdatax,Jdatay,Mdatax,Mdatay,Mercdatax,Mercdatay,Venusdatax,Venusdatay=[],[],[],[],[],[],[],[],[],[]
 plt.legend()
 def make_animation(i):
     if i==0 :
@@ -126,10 +128,9 @@ def make_animation(i):
         Mdatay.clear()
         Mercdatax.clear()
         Mercdatay.clear()
-        Sundatax.clear()
-        Sundatay.clear()
         Venusdatax.clear()
         Venusdatay.clear()
+
         
         
     Tdatax.append(rt[i,0])
@@ -157,6 +158,8 @@ def make_animation(i):
     oMerc.set_data(rmerc[i,0],rmerc[i,1])
     oS.set_data(rsun[i,0],rsun[i,1])
     oVenus.set_data(rvenus[i,0],rvenus[i,1])
+    oHole.set_data(rhole[i,0],rhole[i,1])
+    
     
     time_text.set_text(time_template % (t[i]))
     
@@ -171,12 +174,13 @@ rm=p[2].rList
 rmerc=p[3].rList
 rsun=p[4].rList
 rvenus=p[5].rList
+rhole=p[6].rList
 
 
 
 t0=t/t[1]
 t0=t0.astype(int)
-ani=animation.FuncAnimation(fig, make_animation,frames=t0, interval=2)
+ani=animation.FuncAnimation(fig, make_animation,frames=t0, interval=1)
 
 
 
