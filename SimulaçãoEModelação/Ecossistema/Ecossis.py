@@ -463,6 +463,7 @@ tudo, tudo2 = simulations(50, 50, 500)
 '''Esta parte do código é a responsável pela animação do estado dos ecossistemas ao longo das simulações.'''
 
 fig1 = plt.figure()
+fig1.suptitle('1-Planta         2-Herbívoro         3-Carnívoro',fontsize='25')
 ax1 = fig1.add_subplot(1, 2, 1)
 ims = []
 for i in range(len(tudo[11])):

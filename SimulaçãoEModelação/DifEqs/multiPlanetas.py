@@ -50,7 +50,17 @@ def initialize(size):
     
     return planets,t
 
-
+def randAng(radius,period):
+    v=2*np.pi*radius/period
+    theta=np.random.rand()*360
+    x=radius*np.cos(theta)
+    y=radius*np.sin(theta)
+    vx=v*np.cos(theta)
+    vy=v*np.cos(theta)
+    pos=np.array([x,y])
+    vel=np.array([vx,vy])
+    return pos,vel
+print(randAng(5,1))
 def orbitCalc(deltaT,Tmax,tStep=0.005):
     
     size=int(Tmax/tStep)+1
@@ -81,6 +91,7 @@ def aCalc(planet,pArray,p):
         rNorm=np.sqrt((r*r).sum())
         a += -GM* pArray[p-(i+1)].m * r / rNorm ** 3
     return a
+
 def loadVnC(pArray,i):
     for p in range(pArray.shape[0]):
         pArray[p].rList[i+1]=pArray[p].coor
@@ -111,9 +122,13 @@ lMerc, =ax.plot([],[],'-',color='grey')
 oVenus, =ax.plot([],[],'o',color='green',label='Venus')
 lVenus, =ax.plot([],[],'-',color='green')
 
+oS, =ax.plot(0,0,'o',color='yellow',label='SOL')
+
+
+
 oHole, =ax.plot([],[],'o',color='black',label='Black Hole')
 
-oS, =ax.plot(0,0,'o',color='yellow',label='SOL')
+
 
     
 Tdatax,Tdatay,Jdatax,Jdatay,Mdatax,Mdatay,Mercdatax,Mercdatay,Venusdatax,Venusdatay=[],[],[],[],[],[],[],[],[],[]
@@ -180,7 +195,7 @@ rhole=p[6].rList
 
 t0=t/t[1]
 t0=t0.astype(int)
-ani=animation.FuncAnimation(fig, make_animation,frames=t0, interval=1)
+ani=animation.FuncAnimation(fig, make_animation,frames=t0, interval=0.1)
 
 
 
