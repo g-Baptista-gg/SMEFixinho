@@ -15,13 +15,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from collections import deque
-
+plt.style.use('dark_background')
 class Planet:
-    def  __init__(self,name, mass, coordinates, velocity,size):
+    def  __init__(self,name, mass, radius,period,size):
         self.name=name
-        self.m = mass #Tipos possíveis: Vazio(0), Planta(1), Herbívoro(2), Carnívoro(3)
-        self.coor=coordinates
-        self.v = velocity
+        self.m = mass 
+        
+        tudo=randVals(radius, period)
+        self.coor=tudo[0]
+        self.v = tudo[1]
         self.rList=np.zeros((size,2))
         self.rList[0]=self.coor
         self.vList=np.zeros((size,2))
@@ -33,35 +35,39 @@ def initialize(size):
     t=np.zeros(size)
     planets=np.zeros(0)
     '''Aqui devem ser inseridos os planetas do sistema Solar'''
-    planets=np.append(planets,Planet('Terra', 1/332946, np.array([1.,0.]), np.array([0.,2 * np.pi]), size))
+    planets=np.append(planets,Planet('Terra', 1/332946, 1,1, size))
     
-    planets=np.append(planets,Planet('Júpiter', 1/1047.35, np.array([5.2,0.]), np.array([0.,2 * np.pi*5.2/11.9]), size))
+    planets=np.append(planets,Planet('Júpiter', 1/1047.35, 5.2,11.9, size))
     
-    planets=np.append(planets,Planet('Marte', 1/332946*0.107, np.array([1.5,0.]), np.array([0.,2 * np.pi*1.5/1.9]), size))
+    planets=np.append(planets,Planet('Marte', 1/332946*0.107, 1.5,1.9, size))
     
-    planets=np.append(planets,Planet('Mercury', 0.055*1/332946, np.array([0.4,0]), np.array([0.,2*np.pi*0.4/(88/365)]), size))
+    planets=np.append(planets,Planet('Mercury', 0.055*1/332946, 0.4,88/365, size))
     
-    planets=np.append(planets,Planet('Sun', 1, np.array([0.,0.]), np.array([0.,0.]), size))
+    planets=np.append(planets,Planet('Sun', 1, 0,0, size))
     
-    planets=np.append(planets,Planet('Venus',0.815*1/332946 , np.array([0.7,0.]), np.array([0.,2 * np.pi*0.7/(225/365)]), size))
-    planets=np.append(planets,Planet('Black Hole',1, np.array([-5.,0.]), np.array([0.,0.]), size))
+    planets=np.append(planets,Planet('Venus',0.815*1/332946 , 0.7,225/365, size))
+    #planets=np.append(planets,Planet('Black Hole',1, 5,0, size))
 
     
     
     return planets,t
 
-def randAng(radius,period):
-    v=2*np.pi*radius/period
-    theta=np.random.rand()*360
+def randVals(radius,period):
+    if period==0 :
+        v=0
+    else:
+        v=2*np.pi*radius/period
+    theta=np.random.rand()*2*np.pi
     x=radius*np.cos(theta)
     y=radius*np.sin(theta)
-    vx=v*np.cos(theta)
+    vx=-v*np.sin(theta)
     vy=v*np.cos(theta)
     pos=np.array([x,y])
     vel=np.array([vx,vy])
+    print(pos)
+    print(vel)
     return pos,vel
-print(randAng(5,1))
-def orbitCalc(deltaT,Tmax,tStep=0.005):
+def orbitCalc(deltaT,Tmax,tStep=0.01):
     
     size=int(Tmax/tStep)+1
     print(size)
@@ -126,7 +132,7 @@ oS, =ax.plot(0,0,'o',color='yellow',label='SOL')
 
 
 
-oHole, =ax.plot([],[],'o',color='black',label='Black Hole')
+oHole, =ax.plot([],[],'o',color='white',label='Black Hole')
 
 
 
@@ -173,7 +179,7 @@ def make_animation(i):
     oMerc.set_data(rmerc[i,0],rmerc[i,1])
     oS.set_data(rsun[i,0],rsun[i,1])
     oVenus.set_data(rvenus[i,0],rvenus[i,1])
-    oHole.set_data(rhole[i,0],rhole[i,1])
+    #oHole.set_data(rhole[i,0],rhole[i,1])
     
     
     time_text.set_text(time_template % (t[i]))
@@ -189,7 +195,7 @@ rm=p[2].rList
 rmerc=p[3].rList
 rsun=p[4].rList
 rvenus=p[5].rList
-rhole=p[6].rList
+#rhole=p[6].rList
 
 
 

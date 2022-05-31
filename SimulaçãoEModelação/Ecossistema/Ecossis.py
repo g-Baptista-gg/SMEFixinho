@@ -112,7 +112,6 @@ def initGrid(nx, ny, p1, p2, p3, nIterations):
     #Ordenação aleatória dos vetores posição de cada uma das listas
     random.shuffle(herbPos)
     random.shuffle(carnPos)
-    random.shuffle(plantPos)
     
     return grid, plantPos, herbPos, carnPos, emptyPos, nPlant, nHerb, nCarn, hPlant, hHerb, hCarn, ecossistemas
 
@@ -294,6 +293,8 @@ def turn(tudo, bichoType):
 def iteration(tudo):
     tudo = turn(tudo, 2)
     tudo = turn(tudo, 3)
+    random.shuffle(tudo[2])
+    random.shuffle(tudo[3])
     
     for i in range(len(tudo[1])):
         tudo[0][tudo[1][i][0], tudo[1][i][1]].grow()
@@ -469,7 +470,7 @@ ims = []
 for i in range(len(tudo[11])):
     im = ax1.imshow(tudo[11][i],cmap='summer', animated = True, aspect = 'auto', vmin = 1, vmax = 3)
     if i == 0:
-        ax1.imshow(tudo[11][i], aspect = 'auto', vmin = 1, vmax = 3)
+        ax1.imshow(tudo[11][i],cmap='summer', aspect = 'auto', vmin = 1, vmax = 3)
     ims.append([im])
 ani = animation.ArtistAnimation(fig1, ims, interval = 100, blit = True, repeat_delay = 1000)
 plt.colorbar(im)
@@ -479,7 +480,7 @@ ims2 = []
 for i in range(len(tudo2[11])):
     im2 = ax2.imshow(tudo2[11][i],cmap='summer', animated = True, aspect = 'auto', vmin = 1, vmax = 3)
     if i == 0:
-        ax2.imshow(tudo2[11][i], aspect = 'auto', vmin = 1, vmax = 3)
+        ax2.imshow(tudo2[11][i],cmap='summer', aspect = 'auto', vmin = 1, vmax = 3)
     ims2.append([im2])
 ani2 = animation.ArtistAnimation(fig1, ims2, interval = 100, blit = True, repeat_delay = 1000)
 plt.colorbar(im2)
