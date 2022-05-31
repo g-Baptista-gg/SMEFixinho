@@ -46,9 +46,8 @@ def initialize(size):
     planets=np.append(planets,Planet('Sun', 1, 0,0, size))
     
     planets=np.append(planets,Planet('Venus',0.815*1/332946 , 0.7,225/365, size))
-    #planets=np.append(planets,Planet('Black Hole',1, 5,0, size))
+    planets=np.append(planets,Planet('Black Hole',1,5,0, size))
 
-    
     
     return planets,t
 
@@ -179,7 +178,7 @@ def make_animation(i):
     oMerc.set_data(rmerc[i,0],rmerc[i,1])
     oS.set_data(rsun[i,0],rsun[i,1])
     oVenus.set_data(rvenus[i,0],rvenus[i,1])
-    #oHole.set_data(rhole[i,0],rhole[i,1])
+    oHole.set_data(rhole[i,0],rhole[i,1])
     
     
     time_text.set_text(time_template % (t[i]))
@@ -195,13 +194,13 @@ rm=p[2].rList
 rmerc=p[3].rList
 rsun=p[4].rList
 rvenus=p[5].rList
-#rhole=p[6].rList
+rhole=p[6].rList
 
 
 
 t0=t/t[1]
 t0=t0.astype(int)
-ani=animation.FuncAnimation(fig, make_animation,frames=t0, interval=0.1)
+ani=animation.FuncAnimation(fig, make_animation,frames=t0, interval=1)
 
 
 

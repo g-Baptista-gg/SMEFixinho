@@ -2,24 +2,17 @@
 *______________________________________________________________________________
 |  Method [Ecossitema GG]
 |
-|  Purpose:  [Explain what this method does to support the correct
-|      operation of its class, and how it does it.]
-|
-|  Pre-condition:  [Any non-obvious conditions that must exist
-|      or be true before we can expect this method to function
-|      correctly.]
-|
-|  Post-condition: [What we can expect to exist or be true after
-|      this method has executed under the pre-condition(s).]
+|  Purpose:  Simula a evolução de 2 ecossistemas diferentes (ambos com plantas
+|            e herbívoros, mas um com e outro sem carnívoros).
 |
 |  Parameters:
-|      parameter_name -- [Explanation of the purpose of this
-|          parameter to the method.  Write one explanation for each
-|          formal parameter of this method.]
+|      Pesos dos números de cada tipo de ser vivo no ecossistema
+|      Tamanho do ecossistema (Matrix NxM)
+|      Número de ciclos a executar.
 |
-|  Returns:  [If this method sends back a value via the return
-|      mechanism, describe the purpose of that value here, otherwise
-|      state 'None.']
+|  Returns:  Animações das evoluções temporais para cada um dos ecossistemas e
+|            gráficos com estatísticas sobre cada uma dos ecossistemas e das
+|            suas populações.
 *______________________________________________________________________________
 """
 
