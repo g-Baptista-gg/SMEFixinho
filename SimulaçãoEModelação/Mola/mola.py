@@ -95,13 +95,9 @@ def springSimulCromer(Tmax, dt, tSample, sArray):
 
 mola1 = (1, 10, 5, 7, 0)
 mola2 = (1, 10, 5, 12, 0)
-mola3 = (1, 10, 5, 20, 0)
-mola4 = (1, 5, 5, 25, 0)
-mola5 = (1, 2, 2, 30, 0)
-mola6 = (1, 2, 2, 35, 0)
-mola7 = (7, 7, 7, 45, 0)
+mola3 = (1, 10, 5, 13, 0)
 
-molas = [mola1, mola2, mola3, mola4, mola5, mola6, mola7]
+molas = [mola1, mola2, mola3]
 
 a, b, t = springSimulCromer(100, 0.001, 0.01, molas)
 
@@ -110,3 +106,15 @@ for i in range(a.size):
 
 fig, ax = plt.subplots()
 ax.plot(t, b)
+
+fourier1 = sc.rfft(a[0].xList)
+fourier2 = sc.rfft(a[1].xList)
+fourier3 = sc.rfft(a[2].xList)
+fourierfreq = sc.rfftfreq(a[0].xList.size, 0.01)
+
+fig2, ax2 = plt.subplots()
+ax2.plot(fourierfreq, abs(fourier1))
+ax2.plot(fourierfreq, abs(fourier2))
+ax2.plot(fourierfreq, abs(fourier3))
+#ax2.set_yscale('log')
+ax2.set_ylim(-100, 20000)
