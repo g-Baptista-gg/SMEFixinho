@@ -27,59 +27,86 @@ class Body:
         self.vList[0] = v0
    
 #%%
+
+def energyCalc(springs):
+    n = springs.size
+    energy = 0
+    
+    for i in range(n):
+        if i == 0:
+            energy += 0.5 * springs[i].mass * springs[i].v ** 2 + 0.5 * springs[i].k * (springs[i].x - springs[i].xEq) ** 2
+        else:
+            energy += 0.5 * springs[i].mass * springs[i].v ** 2 + 0.5 * springs[i].k * (springs[i].x - springs[i - 1].x - springs[i].xEq) ** 2
+    
+    return energy
+        
+#%%
         
 def springCalc(springArray, springForce, sAcce, saveSteps, dt):
     n = springArray.size
-    for i in range(n):
-        if i == 0:
-            springForce[i] = springArray[i].k * (springArray[i].x - springArray[i].xEq)
-        else:
-            springForce[i] = springArray[i].k * (springArray[i].x - springArray[i - 1].x - springArray[i].xEq)
-    for i in range(n):
-        sAcce[i] = - springForce[i] / springArray[i].mass + springForce[i + 1] / springArray[i].mass
+    
+    passo = 0
+    while passo < saveSteps:
+        for i in range(n):
+            if i == 0:
+                springForce[i] = springArray[i].k * (springArray[i].x - springArray[i].xEq)
+            else:
+                springForce[i] = springArray[i].k * (springArray[i].x - springArray[i - 1].x - springArray[i].xEq)
+        
+        for i in range(n):
+            sAcce[i] = - springForce[i] / springArray[i].mass + springForce[i + 1] / springArray[i].mass
+            springArray[i].v += sAcce[i] * dt
+            springArray[i].x += springArray[i].v * dt
+        passo += 1
         
 #%%
 
-def springSimulCromer(Tmax, dt, tSample):
-    size = int(Tmax/tSample) + 1
+def springSimulCromer(Tmax, dt, tSample, sArray):
+    
+    size = int(Tmax/tSample)
     nStep = int(Tmax/dt)
     saveSteps = int(tSample/dt)
     
-    springArray = np.zeros(2, dtype = object)
-    springArray[0] = Body(1, 10, 5, 7, 0, size)
-    springArray[1] = Body(1, 10, 5, 12, 0, size)
+    n = len(sArray)
     
-    sForce = np.zeros(3, dtype = float)
-    sAcce = np.zeros(2, dtype = float)
-    energy = np.zeros(size, dtype = float)
+    springs = np.zeros(n, dtype = object)
     
-    energy[0] = 0.5 * springArray[0].mass * springArray[0].v ** 2 + 0.5 * springArray[1].mass * springArray[1].v ** 2 + 0.5 * springArray[0].k * (springArray[0].x - springArray[0].xEq) ** 2 + 0.5 * springArray[1].k * (springArray[1].x - springArray[0].x - springArray[1].xEq) ** 2
+    for i in range(n):
+        springs[i] = Body(sArray[i][0], sArray[i][1], sArray[i][2], sArray[i][3], sArray[i][4], size + 1)
     
-    index = 0
-    h = 1
-    for i in range(nStep):
-        index += 1
-        #print(index)
-        springCalc(springArray, sForce, sAcce, size, dt)
-        for j in range(2):
-            springArray[j].v += sAcce[j] * dt
-            springArray[j].x += springArray[j].v * dt
-            if index == saveSteps:
-                #print(i)
-                springArray[j].vList[h] = springArray[j].v
-                springArray[j].xList[h] = springArray[j].x
-        if index == saveSteps:
-            energy[h] = 0.5 * springArray[0].mass * springArray[0].v ** 2 + 0.5 * springArray[1].mass * springArray[1].v ** 2 + 0.5 * springArray[0].k * (springArray[0].x - springArray[0].xEq) ** 2 + 0.5 * springArray[1].k * (springArray[1].x - springArray[0].x - springArray[1].xEq) ** 2
-            index = 0
-            h += 1
+    sForce = np.zeros(n + 1, dtype = float)
+    sAcce = np.zeros(n, dtype = float)
+    time = np.zeros(size + 1, dtype = float)
+    energy = np.zeros(size + 1, dtype = float)
+    
+    energy[0] = energyCalc(springs)
+    
+    for i in range(size):
+        time[i + 1] = time[i] + tSample
+        springCalc(springs, sForce, sAcce, saveSteps, dt)
+        for j in range(n):
+            springs[j].vList[i + 1] = springs[j].v
+            springs[j].xList[i + 1] = springs[j].x
+        energy[i + 1] = energyCalc(springs)
         
-    return springArray, energy
+    return springs, energy, time
 
 #%%
 
-a, b = springSimulCromer(1000, 0.001, 0.1)
-plt.plot(a[0].xList)
-plt.plot(a[1].xList)
+mola1 = (1, 10, 5, 7, 0)
+mola2 = (1, 10, 5, 12, 0)
+mola3 = (1, 10, 5, 20, 0)
+mola4 = (1, 5, 5, 25, 0)
+mola5 = (1, 2, 2, 30, 0)
+mola6 = (1, 2, 2, 35, 0)
+mola7 = (7, 7, 7, 45, 0)
+
+molas = [mola1, mola2, mola3, mola4, mola5, mola6, mola7]
+
+a, b, t = springSimulCromer(100, 0.001, 0.01, molas)
+
+for i in range(a.size):
+    plt.plot(t, a[i].xList)
 
 fig, ax = plt.subplots()
-ax.plot(b)
+ax.plot(t, b)
