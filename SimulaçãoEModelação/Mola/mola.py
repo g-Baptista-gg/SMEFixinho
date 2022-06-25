@@ -5,10 +5,11 @@ Objetivo de Programação:
 """
 #%%
 
-%matplotlib qt
+#%matplotlib qt
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.fft as sc
+import matplotlib.animation as animation
 
 #%%
 
@@ -91,6 +92,22 @@ def springSimulCromer(Tmax, dt, tSample, sArray):
         
     return springs, energy, time
 
+
+#%%
+def initPlots(springs,axis):
+    size=springs.size
+    plots=np.zeros(size,dtype=object)
+    for i in range(size):
+        plots[i],=axis.plot([],[],"o",color="red")
+    return plots
+
+def makeAnimation(i):
+    for j in range(a.size):
+        #if i==0: 
+            #plotsAni[j].clear
+        #print(a[j].xList[i])
+        plotsAni[j].set_data[0,0]
+
 #%%
 
 mola1 = (1, 10, 5, 7, 0)
@@ -116,5 +133,15 @@ fig2, ax2 = plt.subplots()
 ax2.plot(fourierfreq, abs(fourier1))
 ax2.plot(fourierfreq, abs(fourier2))
 ax2.plot(fourierfreq, abs(fourier3))
-#ax2.set_yscale('log')
+ax2.set_yscale('log')
 ax2.set_ylim(-100, 20000)
+
+
+
+figAni,axAni=plt.subplots()
+plotsAni=initPlots(a, axAni)
+ani=animation.FuncAnimation(figAni, makeAnimation,frames=a[0].xList.size, interval=.1)
+
+
+
+
