@@ -37,9 +37,6 @@ def springCalc(springArray, springForce, sAcce, saveSteps, dt):
             springForce[i] = springArray[i].k * (springArray[i].x - springArray[i - 1].x - springArray[i].xEq)
     for i in range(n):
         sAcce[i] = - springForce[i] / springArray[i].mass + springForce[i + 1] / springArray[i].mass
-    for j in range(n):
-        springArray[j].v += sAcce[j] * dt
-        springArray[j].vList[i] = springArray[j].v
         
 #%%
 
@@ -56,20 +53,31 @@ def springSimulCromer(Tmax, dt, tSample):
     sAcce = np.zeros(2, dtype = float)
     energy = np.zeros(size, dtype = float)
     
-    for i in range(size):
+    energy[0] = 0.5 * springArray[0].mass * springArray[0].v ** 2 + 0.5 * springArray[1].mass * springArray[1].v ** 2 + 0.5 * springArray[0].k * (springArray[0].x - springArray[0].xEq) ** 2 + 0.5 * springArray[1].k * (springArray[1].x - springArray[0].x - springArray[1].xEq) ** 2
+    
+    index = 0
+    h = 1
+    for i in range(nStep):
+        index += 1
+        #print(index)
         springCalc(springArray, sForce, sAcce, size, dt)
         for j in range(2):
             springArray[j].v += sAcce[j] * dt
-            springArray[j].vList[i] = springArray[j].v
             springArray[j].x += springArray[j].v * dt
-            springArray[j].xList[i] = springArray[j].x
-        energy[i] = 0.5 * springArray[0].mass * springArray[0].v ** 2 + 0.5 * springArray[1].mass * springArray[1].v ** 2 + 0.5 * springArray[0].k * (springArray[0].x - springArray[0].xEq) ** 2 + 0.5 * springArray[1].k * (springArray[1].x - springArray[0].x - springArray[1].xEq) ** 2
+            if index == saveSteps:
+                #print(i)
+                springArray[j].vList[h] = springArray[j].v
+                springArray[j].xList[h] = springArray[j].x
+        if index == saveSteps:
+            energy[h] = 0.5 * springArray[0].mass * springArray[0].v ** 2 + 0.5 * springArray[1].mass * springArray[1].v ** 2 + 0.5 * springArray[0].k * (springArray[0].x - springArray[0].xEq) ** 2 + 0.5 * springArray[1].k * (springArray[1].x - springArray[0].x - springArray[1].xEq) ** 2
+            index = 0
+            h += 1
         
     return springArray, energy
 
 #%%
 
-a, b = springSimulCromer(1000, 0.001, 0.005)
+a, b = springSimulCromer(1000, 0.001, 0.1)
 plt.plot(a[0].xList)
 plt.plot(a[1].xList)
 
