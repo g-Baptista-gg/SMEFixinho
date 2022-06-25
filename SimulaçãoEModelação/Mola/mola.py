@@ -8,6 +8,7 @@ Objetivo de Programação:
 %matplotlib qt
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.fft as sc
 
 #%%
 
@@ -27,7 +28,22 @@ class Body:
    
 #%%
         
-def initialize(Tmax, dt, tSample):
+def springCalc(springArray, springForce, sAcce, saveSteps, dt):
+    n = springArray.size
+    for i in range(n):
+        if i == 0:
+            springForce[i] = springArray[i].k * (springArray[i].x - springArray[i].xEq)
+        else:
+            springForce[i] = springArray[i].k * (springArray[i].x - springArray[i - 1].x - springArray[i].xEq)
+    for i in range(n):
+        sAcce[i] = - springForce[i] / springArray[i].mass + springForce[i + 1] / springArray[i].mass
+    for j in range(n):
+        springArray[j].v += sAcce[j] * dt
+        springArray[j].vList[i] = springArray[j].v
+        
+#%%
+
+def springSimulCromer(Tmax, dt, tSample):
     size = int(Tmax/tSample) + 1
     nStep = int(Tmax/dt)
     saveSteps = int(tSample/dt)
@@ -53,19 +69,7 @@ def initialize(Tmax, dt, tSample):
 
 #%%
 
-def springCalc(springArray, springForce, sAcce, saveSteps, dt):
-    n = springArray.size
-    for i in range(n):
-        if i == 0:
-            springForce[i] = springArray[i].k * (springArray[i].x - springArray[i].xEq)
-        else:
-            springForce[i] = springArray[i].k * (springArray[i].x - springArray[i - 1].x - springArray[i].xEq)
-    for i in range(n):
-        sAcce[i] = - springForce[i] / springArray[i].mass + springForce[i + 1] / springArray[i].mass
-
-#%%
-
-a, b = initialize(1000, 0.001, 0.005)
+a, b = springSimulCromer(1000, 0.001, 0.005)
 plt.plot(a[0].xList)
 plt.plot(a[1].xList)
 
