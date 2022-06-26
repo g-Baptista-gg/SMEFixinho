@@ -94,20 +94,34 @@ def springSimulCromer(Tmax, dt, tSample, sArray):
 
 
 #%%
-def initPlots(springs,axis):
-    size=springs.size
-    plots=np.zeros(size,dtype=object)
+
+def initPlots(springs):
+    size = springs.size
+    plots = np.zeros((size,2), dtype = object)
+    #plotsSprings=np.zeros((size),dtype = object)
     for i in range(size):
-        plots[i], =axis.plot([],[],"o",color="red",label=str(i))
+        plots[i,0], = plt.plot([], [], "o", color = "red")
+        plots[i,1],=plt.plot([],[],"-", color='black')
     return plots
 
 def makeAnimation(i):
-    for j in range(a.size):
-        #if i==0: 
-            #plotsAni[j].clear
-        #print(a[j].xList[i])
-        plotsAni[j].set_xdata([i])
-        plotsAni[j].set_ydata([i])
+    #print(i.size)
+    for j in range(i.size):
+        plotsAni[j,0].set_data(i[j], 0)
+        springsx=[]
+        springsy=[]
+        nsprings=20
+        if j == 0 :
+            for k in range(nsprings+1):
+                springsx.append(k*i[j]/nsprings)
+                springsy.append(0.2*np.sin(k*np.pi/2))
+        else:
+            for k in range(nsprings+1):
+                springsx.append(i[j-1]+k*(i[j]-i[j-1])/nsprings)
+                print(springsx)
+                springsy.append(0.2*np.sin(k*np.pi/2))
+        plotsAni[j,1].set_data(springsx,springsy)
+        
 
 #%%
 
@@ -134,14 +148,16 @@ fig2, ax2 = plt.subplots()
 ax2.plot(fourierfreq, abs(fourier1))
 ax2.plot(fourierfreq, abs(fourier2))
 ax2.plot(fourierfreq, abs(fourier3))
-ax2.set_yscale('log')
+#ax2.set_yscale('log')
 ax2.set_ylim(-100, 20000)
 
+r = np.column_stack((a[0].xList, a[1].xList, a[2].xList))
 
-
-figAni,axAni=plt.subplots()
-plotsAni=initPlots(a, axAni)
-ani=animation.FuncAnimation(figAni, makeAnimation,frames=a[0].xList.size, interval=.1)
+figAni, axAni = plt.subplots()
+axAni.set_xlim(0, 20)
+axAni.set_ylim(-2, 2)
+plotsAni = initPlots(a)
+ani = animation.FuncAnimation(figAni, makeAnimation, frames = r, interval = .1)
 
 
 
