@@ -48,7 +48,7 @@ def initialize(size):
     planets=np.append(planets,Planet('Sun', 1, 0,0,"yellow", size))
     
     planets=np.append(planets,Planet('Venus',0.815*1/332946 , 0.7,225/365,"green", size))
-    planets=np.append(planets,Planet('Black Hole',1,5,0,"white", size))
+    #planets=np.append(planets,Planet('Black Hole',1,5,0,"white", size))
 
     
     return planets,t
@@ -183,7 +183,7 @@ ax.set_aspect('equal')
 
     
     
-p,t=orbitCalc(0.001, 5,1)
+p,t=orbitCalc(0.001, 50,1)
 p0,tlixo=orbitCalc(0.001,50,0)
 time_template = '%.2f years'
 time_text = ax.text(0.05, 0.9, '', transform=ax.transAxes)
