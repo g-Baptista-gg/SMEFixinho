@@ -5,7 +5,7 @@ Objetivo de Programação:
 """
 #%%
 
-#%matplotlib qt
+%matplotlib qt
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.fft as sc
@@ -98,7 +98,7 @@ def initPlots(springs,axis):
     size=springs.size
     plots=np.zeros(size,dtype=object)
     for i in range(size):
-        plots[i],=axis.plot([],[],"o",color="red")
+        plots[i], =axis.plot([],[],"o",color="red",label=str(i))
     return plots
 
 def makeAnimation(i):
@@ -106,7 +106,8 @@ def makeAnimation(i):
         #if i==0: 
             #plotsAni[j].clear
         #print(a[j].xList[i])
-        plotsAni[j].set_data[0,0]
+        plotsAni[j].set_xdata([i])
+        plotsAni[j].set_ydata([i])
 
 #%%
 
