@@ -48,7 +48,8 @@ def initialize(size):
     planets=np.append(planets,Planet('Sun', 1, 0,0,"yellow", size))
     
     planets=np.append(planets,Planet('Venus',0.815*1/332946 , 0.7,225/365,"green", size))
-    #planets=np.append(planets,Planet('Black Hole',1,5,0,"white", size))
+    
+    planets=np.append(planets,Planet('Black Hole',1,5,0,"white", size))
 
     
     return planets,t

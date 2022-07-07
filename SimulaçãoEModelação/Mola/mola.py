@@ -26,6 +26,7 @@ class Body:
         
         self.vList = np.zeros(size)
         self.vList[0] = v0
+        
    
 #%%
 
@@ -59,7 +60,48 @@ def springCalc(springArray, springForce, sAcce, saveSteps, dt):
             springArray[i].v += sAcce[i] * dt
             springArray[i].x += springArray[i].v * dt
         passo += 1
+
+
+def springCalcBeeman(springArray,springForce,sAcce0,sAcce1,sAcce2,saveSteps,dt):
+    n = springArray.size
+    
+    passo=0
+    
+    while passo < saveSteps:
+        for i in range(n):
+            if i == 0:
+                springForce[i] = springArray[i].k * (springArray[i].x - springArray[i].xEq)
+            else:
+                springForce[i] = springArray[i].k * (springArray[i].x - springArray[i - 1].x - springArray[i].xEq)
         
+        for i in range(n):
+            sAcce2[i] = - springForce[i] / springArray[i].mass + springForce[i + 1] / springArray[i].mass
+            springArray[i].x = springArray[i].x + springArray[i].v * dt + 2/3 * sAcce1[i]*dt**2 -1/6 * sAcce0[i] * dt
+            springArray[i].v=springArray[i].v+1/3 * sAcce2[i]* dt + 5/6 * sAcce1[i] * dt - 1/6 * sAcce0[i] * dt
+            
+            sAcce0[i]=sAcce1[i]
+            sAcce1[i]=sAcce2[i]
+        
+        passo+=1
+
+
+
+
+def initAcc(springArray, springForce, sAcce0,sAcce1):
+    n = springArray.size
+    
+    for i in range(n):
+        if i == 0:
+            springForce[i] = springArray[i].k * (springArray[i].x - springArray[i].xEq)
+        else:
+            springForce[i] = springArray[i].k * (springArray[i].x - springArray[i - 1].x - springArray[i].xEq)
+        
+    for i in range(n):
+        a = - springForce[i] / springArray[i].mass + springForce[i + 1] / springArray[i].mass
+        sAcce0[i] = a
+        sAcce1[i] = a
+
+
 #%%
 
 def springSimulCromer(Tmax, dt, tSample, sArray):
@@ -84,13 +126,58 @@ def springSimulCromer(Tmax, dt, tSample, sArray):
     
     for i in range(size):
         time[i + 1] = time[i] + tSample
-        springCalc(springs, sForce, sAcce, saveSteps, dt)
+        springCalc(springs, sForce, sAcce0,sAcce1,sAcce2, saveSteps, dt)
         for j in range(n):
             springs[j].vList[i + 1] = springs[j].v
             springs[j].xList[i + 1] = springs[j].x
         energy[i + 1] = energyCalc(springs)
         
     return springs, energy, time
+
+
+
+    
+    
+    
+    
+    
+    
+    
+
+def springSimulBeeman(Tmax, dt, tSample, sArray):
+    size = int(Tmax/tSample)
+    nStep = int(Tmax/dt)
+    saveSteps = int(tSample/dt)
+    
+    n = len(sArray)
+    
+    springs = np.zeros(n, dtype = object)
+    
+    for i in range(n):
+        springs[i] = Body(sArray[i][0], sArray[i][1], sArray[i][2], sArray[i][3], sArray[i][4], size + 1)
+        
+    sForce = np.zeros(n + 1, dtype = float)
+    sAcce0 = np.zeros(n, dtype = float)
+    sAcce1 = np.zeros(n, dtype = float)
+    sAcce2 = np.zeros(n, dtype = float)
+    time = np.zeros(size + 1, dtype = float)
+    energy = np.zeros(size + 1, dtype = float)
+    
+    energy[0] = energyCalc(springs)
+    
+    for i in range(size):
+        if i == 0 :
+            initAcc(springs, sForce, sAcce0,sAcce1)
+        time[i + 1] = time[i] + tSample
+        springCalcBeeman(springs, sForce, sAcce0,sAcce1,sAcce2, saveSteps, dt)
+            
+        for j in range(n):
+            springs[j].vList[i + 1] = springs[j].v
+            springs[j].xList[i + 1] = springs[j].x
+        energy[i + 1] = energyCalc(springs)
+        
+    return springs, energy, time
+
 
 
 #%%
@@ -131,7 +218,7 @@ molas.append( [1,10,5,15,0])
 
 
 
-a, b, t = springSimulCromer(100, 0.001, 0.01, molas)
+a, b, t = springSimulBeeman(100, 0.001, 0.01, molas)
 
 for i in range(a.size):
     plt.plot(t, a[i].xList)
@@ -159,6 +246,16 @@ axAni.set_xlim(0, 20)
 axAni.set_ylim(-2, 2)
 plotsAni = initPlots(a)
 ani = animation.FuncAnimation(figAni, makeAnimation, frames = r, interval = .1)
+
+
+
+
+
+
+
+
+
+
 
 
 
