@@ -69,6 +69,28 @@ def springCalcCromer(springs, sForce, sAcce, saveSteps, dt):
             springs[i].v += sAcce[i] * dt
             springs[i].x += springs[i].v * dt
         passo += 1
+        
+#%%
+
+def springCalcRK4(springs, sForce, sAcce, saveSteps, dt):
+    n = springs.size
+    passo = 0
+    
+    while passo < saveSteps:
+        acceCalc(springs, n, sForce, sAcce)
+        for i in range(n):
+            v=springs[i].v
+
+            springs[i].v += sAcce[i] * dt
+            
+            k2=v+ springs[i].v*dt/2 + sAcce[i] * (dt/2)
+            
+            k3=v+ k2 * dt/2 + sAcce[i] * (dt/2)
+            
+            k4=v+ k3*dt + sAcce[i] * dt
+            
+            springs[i].x += dt/6 * (springs[i].v+2*k2+2*k3+k4)
+        passo += 1
 
 #%%
 
@@ -203,7 +225,7 @@ def springSimulVerlet(Tmax, dt, tSample, sArray):
     
     for i in range(n):
         springs[i] = Body(sArray[i][0], sArray[i][1], sArray[i][2], sArray[i][3], sArray[i][4], size + 1)
-        xLast[i] = copy.deepcopy(springs[i].x)
+        xLast[i] = springs[i].x-springs[i].v*dt
     
     energy[0] = energyCalc(springs)
     
@@ -211,6 +233,39 @@ def springSimulVerlet(Tmax, dt, tSample, sArray):
         time[i + 1] = time[i] + tSample
         xLast = springCalcVerlet(springs, sForce, sAcce, saveSteps, dt, xLast, xPos)
             
+        for j in range(n):
+            springs[j].vList[i + 1] = springs[j].v
+            springs[j].xList[i + 1] = springs[j].x
+        energy[i + 1] = energyCalc(springs)
+        
+    return springs, energy, time
+
+
+#%%
+
+def springSimulRK4(Tmax,dt,tSample,sArray):
+    
+    size = int(Tmax/tSample)
+    nStep = int(Tmax/dt)
+    saveSteps = int(tSample/dt)
+    
+    n = len(sArray)
+    
+    springs = np.zeros(n, dtype = object)
+    
+    for i in range(n):
+        springs[i] = Body(sArray[i][0], sArray[i][1], sArray[i][2], sArray[i][3], sArray[i][4], size + 1)
+    
+    sForce = np.zeros(n + 1, dtype = float)
+    sAcce = np.zeros(n, dtype = float)
+    time = np.zeros(size + 1, dtype = float)
+    energy = np.zeros(size + 1, dtype = float)
+    
+    energy[0] = energyCalc(springs)
+    
+    for i in range(size):
+        time[i + 1] = time[i] + tSample
+        springCalcRK4(springs, sForce, sAcce, saveSteps, dt)
         for j in range(n):
             springs[j].vList[i + 1] = springs[j].v
             springs[j].xList[i + 1] = springs[j].x
@@ -312,6 +367,14 @@ def runGui(*args):
             fourierfreq = sc.rfftfreq(a3[0].xList.size, 0.01)
             ax2.plot(fourierfreq, abs(fourier3), label = 'Beeman')
             
+    if alg[3] == True:
+        a4, b4, t4 = springSimulRK4(tmax, dt, tSample, molas)
+        for i in range(a4.size):
+            ax.plot(t4, a4[i].xList, label = 'RK4')
+            fourier4 = sc.rfft(a4[i].xList)
+            fourierfreq = sc.rfftfreq(a4[0].xList.size, 0.01)
+            ax2.plot(fourierfreq, abs(fourier4), label = 'RK4')
+            
     ax.legend()
     ax2.legend()
     
@@ -366,22 +429,55 @@ def addSpring(*args):
     
     global butPos
     global plusax
+    global minax
+    
     butPos-=0.05
-    plusax.set_position([0.3, butPos, 0.03, 0.03], which='both')
+    plusax.set_position([0.35, butPos, 0.03, 0.03], which='both')
+    minax.set_position([0.25, butPos, 0.03, 0.03], which='both')
+    
+def takeSpring(*args):
+    global pos
+    global xIn
+    global butPos
+    
+    pos+=0.05
+    butPos+=0.05
+    
+    global springTextArray
+    
+    global molaName
     
     
+    if molaName>1 :
+        for i in range(5):
+            springTextArray[-1][i*2].remove()
+            
+        springTextArray.pop()
+    molaName-=1
+    xIn-=3
+    plusax.set_position([0.35, butPos, 0.03, 0.03], which='both')
+    minax.set_position([0.25, butPos, 0.03, 0.03], which='both')
+    
+    
+
 
 gui = plt.figure(figsize = (12, 7))
 
 algax = plt.axes([0.65, 0.65, 0.12, 0.2])
-algcb = CheckButtons(algax, ['Euler-Cromer', 'Verlet', 'Beeman'])
+algcb = CheckButtons(algax, ['Euler-Cromer', 'Verlet', 'Beeman','RK4'])
 
 runax = plt.axes([0.675, 0.2, 0.2, 0.2])
 runbut = Button(runax, 'Run')
 runbut.on_clicked(runGui)
 
 butPos=0.7
-plusax = plt.axes([0.3, butPos, 0.03, 0.03])
+
+minax = plt.axes([0.25, butPos, 0.03, 0.03])
+minbut = Button(minax, '-')
+minbut.on_clicked(takeSpring)
+
+
+plusax = plt.axes([0.35, butPos, 0.03, 0.03])
 plusbut = Button(plusax, '+')
 
 pos=0.8
