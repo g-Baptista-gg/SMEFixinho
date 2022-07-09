@@ -184,6 +184,7 @@ def springCalcRK4(springs, sForce, sAcce, saveSteps, dt):
     passo = 0
     sForceRK=np.zeros(n + 1, dtype = float)
     sAcceRK=np.zeros(n, dtype = float)
+    pos=np.zeros(n)
     while passo < saveSteps:
         acceCalc(springs, n, sForce, sAcce)
         for i in range(n):
@@ -211,9 +212,13 @@ def springCalcRK4(springs, sForce, sAcce, saveSteps, dt):
             dx4=dt*(v+dv3)
             dv4=dt* sAcceRK[i]
             
-            
-            springs[i].x += 1/6 * (dx1 +2 * dx2 +2 * dx3+dx4)
+            pos[i]=1/6 * (dx1 +2 * dx2 +2 * dx3+dx4)
             springs[i].v += 1/6 * (dv1 +2 * dv2 +2 * dv3+dv4)
+            
+        for i in range(n):
+            springs[i].x+=pos[i]
+            
+            
         passo += 1
 
 #%%
@@ -688,7 +693,7 @@ def runGui(*args):
             fourier = sc.rfft(a[i].xList)
             fourierfreq = sc.rfftfreq(a[0].xList.size, 0.01)
             ax2.plot(fourierfreq, abs(fourier), label ='Mola ' + str(i+1)+ 'Euler-Cromer')
-            ax3.plot(b,label = 'Euler-Cromer')
+        ax3.plot(b,label = 'Euler-Cromer')
         
     if alg[1] == True:
         a2, b2, t2 = springSimulVerlet(tmax, dt, tSample, molas)
@@ -697,7 +702,7 @@ def runGui(*args):
             fourier2 = sc.rfft(a2[i].xList)
             fourierfreq = sc.rfftfreq(a2[0].xList.size, 0.01)
             ax2.plot(fourierfreq, abs(fourier2), label ='Mola ' + str(i+1)+ 'Verlet')
-            ax3.plot(b2,label = 'Verlet')
+        ax3.plot(b2,label = 'Verlet')
         
     if alg[2] == True:
         a3, b3, t3 = springSimulBeeman(tmax, dt, tSample, molas)
@@ -706,7 +711,7 @@ def runGui(*args):
             fourier3 = sc.rfft(a3[i].xList)
             fourierfreq = sc.rfftfreq(a3[0].xList.size, 0.01)
             ax2.plot(fourierfreq, abs(fourier3), label ='Mola ' + str(i+1)+ 'Beeman')
-            ax3.plot(b3,label = 'Beeman')
+        ax3.plot(b3,label = 'Beeman')
             
     if alg[3] == True:
         a4, b4, t4 = springSimulRK4(tmax, dt, tSample, molas)
@@ -715,7 +720,7 @@ def runGui(*args):
             fourier4 = sc.rfft(a4[i].xList)
             fourierfreq = sc.rfftfreq(a4[0].xList.size, 0.01)
             ax2.plot(fourierfreq, abs(fourier4), label ='Mola ' + str(i+1)+ 'RK4')
-            ax3.plot(b4,label = 'RK4')
+        ax3.plot(b4,label = 'RK4')
             
     ax.legend()
     ax2.legend()
