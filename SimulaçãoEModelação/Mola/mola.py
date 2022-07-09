@@ -98,6 +98,19 @@ def acceCalc(springs, sSize, sForce, sAcce):
             
     for i in range(sSize):
         sAcce[i] = - sForce[i] / springs[i].mass + sForce[i + 1] / springs[i].mass
+        
+        
+def acceCalcRK4(springs, sSize, sForce, sAcce,dx1):
+    for i in range(sSize):
+        if i == 0:
+            sForce[i] = springs[i].k * (springs[i].x+dx1 - springs[i].xEq)
+        else:
+            sForce[i] = springs[i].k * (springs[i].x+dx1 - springs[i - 1].x - springs[i].xEq)
+            
+    for i in range(sSize):
+        sAcce[i] = - sForce[i] / springs[i].mass + sForce[i + 1] / springs[i].mass
+    
+    
 
 #%%
 
@@ -169,21 +182,38 @@ def springCalcRK4(springs, sForce, sAcce, saveSteps, dt):
     """
     n = springs.size
     passo = 0
-    
+    sForceRK=np.zeros(n + 1, dtype = float)
+    sAcceRK=np.zeros(n, dtype = float)
     while passo < saveSteps:
         acceCalc(springs, n, sForce, sAcce)
         for i in range(n):
             v=springs[i].v
 
-            springs[i].v += sAcce[i] * dt
+            # springs[i].v += sAcce[i] * dt
             
-            k2=v+ springs[i].v*dt/2 + sAcce[i] * (dt/2)
+            # k2=(v+ springs[i].v)*dt/2 + sAcce[i] * (dt/2)
             
-            k3=v+ k2 * dt/2 + sAcce[i] * (dt/2)
+            # k3=(v+ k2) * dt/2 + sAcce[i] * (dt/2)
             
-            k4=v+ k3*dt + sAcce[i] * dt
+            # k4=(v+ k3)*dt + sAcce[i] * dt
+            dx1=dt*v
+            dv1=sAcce[i]*dt
             
-            springs[i].x += dt/6 * (springs[i].v+2*k2+2*k3+k4)
+            acceCalcRK4(springs, n, sForceRK, sAcceRK,dx1/2)
+            dx2=dt*(v+dv1 / 2)
+            dv2=dt* sAcceRK[i]
+            
+            acceCalcRK4(springs, n, sForceRK, sAcceRK,dx2/2)
+            dx3=dt*(v+dv2 / 2)
+            dv3=dt* sAcceRK[i]
+            
+            acceCalcRK4(springs, n, sForceRK, sAcceRK,dx3)
+            dx4=dt*(v+dv3)
+            dv4=dt* sAcceRK[i]
+            
+            
+            springs[i].x += 1/6 * (dx1 +2 * dx2 +2 * dx3+dx4)
+            springs[i].v += 1/6 * (dv1 +2 * dv2 +2 * dv3+dv4)
         passo += 1
 
 #%%
@@ -288,6 +318,7 @@ def springCalcVerlet(springs, sForce, sAcce, saveSteps, dt, xLast, xPos):
         for i in range(n):
             xPos[i] = copy.deepcopy(springs[i].x)
             springs[i].x = 2 * springs[i].x - xLast[i] + sAcce[i] * dt ** 2
+            springs[i].v = (springs[i].x - xLast[i]) / (2*dt)
 
         xLast = copy.deepcopy(xPos)
 
@@ -299,7 +330,9 @@ def springCalcVerlet(springs, sForce, sAcce, saveSteps, dt, xLast, xPos):
 
 def springSimulCromer(Tmax, dt, tSample, sArray):
     """
-    
+    Função:
+    ---------
+    Calcula as novas posições e velocidades para cada mola com base no algoritmo de Verlet
 
     Parameters
     ----------
@@ -634,7 +667,19 @@ def runGui(*args):
     
     
     fig, ax = plt.subplots()
+    ax.set_title('Posição de cada corpo')
+    ax.set_xlabel('Iteração')
+    ax.set_ylabel('Posição')
+    
     fig2, ax2 = plt.subplots()
+    ax2.set_title('Transformadas de Fourier')
+    ax2.set_xlabel('Frequência')
+    ax2.set_ylabel('Intensidade')
+    
+    fig3, ax3 = plt.subplots()
+    ax3.set_title('Evolução da Energia do sistema')
+    ax3.set_xlabel('Iteração')
+    ax3.set_ylabel('Energia')
     
     if alg[0] == True:
         a, b, t = springSimulCromer(tmax, dt, tSample, molas)
@@ -643,6 +688,7 @@ def runGui(*args):
             fourier = sc.rfft(a[i].xList)
             fourierfreq = sc.rfftfreq(a[0].xList.size, 0.01)
             ax2.plot(fourierfreq, abs(fourier), label ='Mola ' + str(i+1)+ 'Euler-Cromer')
+            ax3.plot(b,label = 'Euler-Cromer')
         
     if alg[1] == True:
         a2, b2, t2 = springSimulVerlet(tmax, dt, tSample, molas)
@@ -651,6 +697,7 @@ def runGui(*args):
             fourier2 = sc.rfft(a2[i].xList)
             fourierfreq = sc.rfftfreq(a2[0].xList.size, 0.01)
             ax2.plot(fourierfreq, abs(fourier2), label ='Mola ' + str(i+1)+ 'Verlet')
+            ax3.plot(b2,label = 'Verlet')
         
     if alg[2] == True:
         a3, b3, t3 = springSimulBeeman(tmax, dt, tSample, molas)
@@ -659,6 +706,7 @@ def runGui(*args):
             fourier3 = sc.rfft(a3[i].xList)
             fourierfreq = sc.rfftfreq(a3[0].xList.size, 0.01)
             ax2.plot(fourierfreq, abs(fourier3), label ='Mola ' + str(i+1)+ 'Beeman')
+            ax3.plot(b3,label = 'Beeman')
             
     if alg[3] == True:
         a4, b4, t4 = springSimulRK4(tmax, dt, tSample, molas)
@@ -667,9 +715,11 @@ def runGui(*args):
             fourier4 = sc.rfft(a4[i].xList)
             fourierfreq = sc.rfftfreq(a4[0].xList.size, 0.01)
             ax2.plot(fourierfreq, abs(fourier4), label ='Mola ' + str(i+1)+ 'RK4')
+            ax3.plot(b4,label = 'RK4')
             
     ax.legend()
     ax2.legend()
+    ax3.legend()
     ax2.set_xlim([0.1,1])
     ax2.set_ylim([0,10000])
     
