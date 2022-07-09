@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import scipy.fft as sc
 import matplotlib.animation as animation
 import copy
+from matplotlib.widgets import Slider, Button, RangeSlider, TextBox, CheckButtons, RadioButtons
 
 #%%
 
@@ -230,80 +231,194 @@ def initPlots(springs):
 
 def makeAnimation(i):
     #print(i.size)
-    for j in range(i.size):
-        plotsAni[j, 0].set_data(i[j], 0)
+    s = i.size
+
+    if s == 1:
+        plotsAni[0, 0].set_data(i, 0)
         springsx = []
         springsy = []
         nsprings = 20
-        if j == 0 :
-            for k in range(nsprings + 1):
-                springsx.append(k * i[j]/nsprings)
-                springsy.append(0.2 * np.sin(k * np.pi/2))
-        else:
-            for k in range(nsprings + 1):
-                springsx.append(i[j - 1] + k * (i[j] - i[j - 1])/nsprings)
-                springsy.append(0.2 * np.sin(k * np.pi/2))
-        plotsAni[j, 1].set_data(springsx, springsy)
+        for k in range(nsprings + 1):
+            springsx.append(k * i/nsprings)
+            springsy.append(0.2 * np.sin(k * np.pi/2))
+        plotsAni[0, 1].set_data(springsx, springsy)
+    else:
+        for j in range(i.size):
+            plotsAni[j, 0].set_data(i[j], 0)
+            springsx = []
+            springsy = []
+            nsprings = 20
+            if j == 0 :
+                for k in range(nsprings + 1):
+                    springsx.append(k * i[j]/nsprings)
+                    springsy.append(0.2 * np.sin(k * np.pi/2))
+            else:
+                for k in range(nsprings + 1):
+                    springsx.append(i[j - 1] + k * (i[j] - i[j - 1])/nsprings)
+                    springsy.append(0.2 * np.sin(k * np.pi/2))
+            plotsAni[j, 1].set_data(springsx, springsy)
     
 #%%
 
-molas = []
-molas.append([1, 10, 5, 7, 0])
-#molas.append([1, 10, 5, 12, 0])
-#molas.append([1, 10, 5, 13, 0])
-#molas.append([1, 10, 5, 15, 0])
-
-a, b, t = springSimulBeeman(100, 0.001, 0.01, molas)
-
-a2, b2, t2 = springSimulCromer(100, 0.001, 0.01, molas)
-
-xPos = a[0].xList
-
-for i in range(a.size):
-    plt.plot(t, a[i].xList)
+def runGui(*args):
     
-# =============================================================================
-# for i in range(a2.size):
-#     plt.plot(t2, a2[i].xList)
-# =============================================================================
+    global ani
+    global plotsAni
+    global springTextArray
+    
+    alg = algcb.get_status()
+    
+    tmax = float(tmaxtb.text)
+    dt = float(dttb.text)
+    tSample = float(tsamtb.text)
+    
+    molas = []
+    #molas.append([float(sprtb.text), float(sprtb2.text), float(sprtb3.text), float(sprtb4.text), float(sprtb5.text)])
+    #molas.append([1, 10, 5, 7, 0])
+    for i in range(len(springTextArray)):
+        s0=float(springTextArray[i][1].text)
+        s1=float(springTextArray[i][3].text)
+        s2=float(springTextArray[i][5].text)
+        s3=float(springTextArray[i][7].text)
+        s4=float(springTextArray[i][9].text)
+        S=[s0,s1,s2,s3,s4]
+        molas.append(S)
+    
+    
+    fig, ax = plt.subplots()
+    fig2, ax2 = plt.subplots()
+    
+    if alg[0] == True:
+        a, b, t = springSimulCromer(tmax, dt, tSample, molas)
+        for i in range(a.size):
+            ax.plot(t, a[i].xList, label = 'Euler-Cromer')
+            fourier = sc.rfft(a[i].xList)
+            fourierfreq = sc.rfftfreq(a[0].xList.size, 0.01)
+            ax2.plot(fourierfreq, abs(fourier), label = 'Euler-Cromer')
+        
+    if alg[1] == True:
+        a2, b2, t2 = springSimulVerlet(tmax, dt, tSample, molas)
+        for i in range(a2.size):
+            ax.plot(t2, a2[i].xList, label = 'Verlet')
+            fourier2 = sc.rfft(a2[i].xList)
+            fourierfreq = sc.rfftfreq(a2[0].xList.size, 0.01)
+            ax2.plot(fourierfreq, abs(fourier2), label = 'Verlet')
+        
+    if alg[2] == True:
+        a3, b3, t3 = springSimulBeeman(tmax, dt, tSample, molas)
+        for i in range(a3.size):
+            ax.plot(t3, a3[i].xList, label = 'Beeman')
+            fourier3 = sc.rfft(a3[i].xList)
+            fourierfreq = sc.rfftfreq(a3[0].xList.size, 0.01)
+            ax2.plot(fourierfreq, abs(fourier3), label = 'Beeman')
+            
+    ax.legend()
+    ax2.legend()
+    
+    if a.size == 1:
+        r = a[0].xList
+    else:
+        for i in range(a.size-1):
+            if i == 0:
+                r=np.column_stack((a[0].xList,a[1].xList))
+            else:
+                r=np.column_stack((r,a[i+1].xList))
+            
+        #r = np.column_stack((a[0].xList))
 
-fig, ax = plt.subplots()
-ax.plot(t, b)
-ax.plot(t2, b2)
+    figAni, axAni = plt.subplots()
+    axAni.set_xlim(0, 20)
+    axAni.set_ylim(-5, 5)
+    plotsAni = initPlots(a)
+    ani = animation.FuncAnimation(figAni, makeAnimation, frames = r, interval = .1)
 
-# 
-# fourier1 = sc.rfft(a[0].xList)
-# #fourier2 = sc.rfft(a[1].xList)
-# #fourier3 = sc.rfft(a[2].xList)
-# fourierfreq = sc.rfftfreq(a[0].xList.size, 0.01)
-# 
-# fig2, ax2 = plt.subplots()
-# ax2.plot(fourierfreq, abs(fourier1))
-# #ax2.plot(fourierfreq, abs(fourier2))
-# #ax2.plot(fourierfreq, abs(fourier3))
-# ax2.set_yscale('log')
-# ax2.set_ylim(-100, 20000)
-# ax2.set_xlim(0, 1.5)
-# 
-# r = np.column_stack((a[0].xList))
-# 
-# figAni, axAni = plt.subplots()
-# axAni.set_xlim(0, 20)
-# axAni.set_ylim(-2, 2)
-# plotsAni = initPlots(a)
-# ani = animation.FuncAnimation(figAni, makeAnimation, frames = r, interval = .1)
-# =============================================================================
+#%%
+
+def addSpring(*args):
+    global pos
+    global springTextArray
+    
+    global molaName
+    molaName+=1
+    
+    global xIn
+    xIn+=3
+    
+    
+    pos-=0.05
+    s0 = plt.axes([0.15, pos, 0.05, 0.03])
+    s1 = TextBox(s0,'Mola '+str(molaName)+  ': Massa(kg)', initial = '1')
+
+    s2 = plt.axes([0.25, pos, 0.05, 0.03])
+    s3 = TextBox(s2, '$k$(N/m)', initial = '10')
+
+    s4 = plt.axes([0.35, pos, 0.05, 0.03])
+    s5 = TextBox(s4, '$d_{Eq}$(m)', initial = '5')
+
+    s6 = plt.axes([0.45, pos, 0.05, 0.03])
+    s7 = TextBox(s6, '$x_0$(m)', initial = str(xIn))
+
+    s8 = plt.axes([0.55, pos, 0.05, 0.03])
+    s9 = TextBox(s8, '$v_0$(m/s)', initial = '0')
+    sA0=[s0,s1,s2,s3,s4,s5,s6,s7,s8,s9]
+    
+    springTextArray.append(sA0)
+    
+    global butPos
+    global plusax
+    butPos-=0.05
+    plusax.set_position([0.3, butPos, 0.03, 0.03], which='both')
+    
+    
+
+gui = plt.figure(figsize = (12, 7))
+
+algax = plt.axes([0.65, 0.65, 0.12, 0.2])
+algcb = CheckButtons(algax, ['Euler-Cromer', 'Verlet', 'Beeman'])
+
+runax = plt.axes([0.675, 0.2, 0.2, 0.2])
+runbut = Button(runax, 'Run')
+runbut.on_clicked(runGui)
+
+butPos=0.7
+plusax = plt.axes([0.3, butPos, 0.03, 0.03])
+plusbut = Button(plusax, '+')
+
+pos=0.8
+springTextArray=[]
+plusbut.on_clicked(addSpring)
+
+molaName=1
+xIn=7
+
+s0 = plt.axes([0.15, 0.8, 0.05, 0.03])
+s1 = TextBox(s0,'Mola '+str(molaName)+  ': Massa(kg)', initial = '1')
+
+s2 = plt.axes([0.25, 0.8, 0.05, 0.03])
+s3 = TextBox(s2, '$k$(N/m)', initial = '10')
+
+s4 = plt.axes([0.35, 0.8, 0.05, 0.03])
+s5 = TextBox(s4, '$d_{Eq}$(m)', initial = '5')
+
+s6 = plt.axes([0.45, 0.8, 0.05, 0.03])
+s7 = TextBox(s6, '$x_0$(m)', initial = str(xIn))
+
+s8 = plt.axes([0.55, 0.8, 0.05, 0.03])
+s9 = TextBox(s8, '$v_0$(m/s)', initial = '0')
+sA0=[s0,s1,s2,s3,s4,s5,s6,s7,s8,s9]
+
+springTextArray.append(sA0)
+
+
+dtax = plt.axes([0.85, 0.8, 0.05, 0.03])
+dttb = TextBox(dtax, '$dt$(s)', initial = '0.001')
 
 
 
+tmaxax = plt.axes([0.85, 0.7, 0.05, 0.03])
+tmaxtb = TextBox(tmaxax, '$t_{Max}$(s)', initial = '100')
 
-
-
-
-
-
-
-
-
+tsamax = plt.axes([0.85, 0.6, 0.05, 0.03])
+tsamtb = TextBox(tsamax, '$t_{Sample}$(s)', initial = '0.01')
 
 
