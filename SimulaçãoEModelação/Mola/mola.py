@@ -15,16 +15,16 @@ from matplotlib.widgets import Slider, Button, RangeSlider, TextBox, CheckButton
 
 #%%
 
-class Body:
+class Body:                 #   Cada corpo possui associado a si uma mola à esquerda
     def __init__(self, mass, k, xEq, x0, v0, size):
-        self.mass = mass #  body mass
-        self.k = k  #   spring constant
-        self.xEq = xEq
-        self.x = x0 #   instant pos
-        self.v = v0 #   instant velocity
+        self.mass = mass    #   body mass
+        self.k = k          #   spring constant
+        self.xEq = xEq      #   Equilibrium displacement
+        self.x = x0         #   instant position
+        self.v = v0         #   instant velocity
         
         self.xList = np.zeros(size)
-        self.xList[0] = x0
+        self.xList[0] = x0 #    guarda-se a posição inicial
         
         self.vList = np.zeros(size)
         self.vList[0] = v0
@@ -33,11 +33,27 @@ class Body:
 #%%
 
 def energyCalc(springs):
+    """
+    Função
+    ---------
+    Calcula a soma das energias potenciais das molas e cinéticas dos corpos
+
+    Parameters
+    ----------
+    springs : Array de objetos
+        Array onde tem as várias molas/corpos do sistema
+
+    Returns
+    -------
+    energy : float
+        Energia total do sistema.
+
+    """
     n = springs.size
     energy = 0
     
     for i in range(n):
-        if i == 0:
+        if i == 0:          # Apenas necessida da posição
             energy += 0.5 * springs[i].mass * springs[i].v ** 2 + 0.5 * springs[i].k * (springs[i].x - springs[i].xEq) ** 2
         else:
             energy += 0.5 * springs[i].mass * springs[i].v ** 2 + 0.5 * springs[i].k * (springs[i].x - springs[i - 1].x - springs[i].xEq) ** 2
@@ -46,7 +62,33 @@ def energyCalc(springs):
         
 #%%
         
-def acceCalc(springs, sSize, sForce, sAcce):
+def acceCalc(springs, sSize, sForce, sAcce): 
+    """
+    Função:
+    ---------
+    Calcula as forças e acelerações para todos os corpos do sistema.
+    
+    
+    Parameters
+    ----------
+    springs : Array de objetos
+        Array com as várias molas/corpos do sistema
+        
+    sSize : Int
+        Indicador do número de molas/corpos
+        
+    sForce : Array de floats
+        Array de Forças sentidas exercidas pelo corpo da esquerda
+        
+    sAcce : Array de floats
+        Array com as acelerações sentidas por cada corpo. Necessário para o cálculo do próximo passo
+        
+
+    Returns
+    -------
+    Não retorna nada. Apenas modifica Arrays já existentes.
+
+    """
     
     for i in range(sSize):
         if i == 0:
@@ -60,6 +102,32 @@ def acceCalc(springs, sSize, sForce, sAcce):
 #%%
 
 def springCalcCromer(springs, sForce, sAcce, saveSteps, dt):
+    """
+    Função:
+    ---------
+    Calcula as novas posições e velocidades para cada mola com base no algoritmo de Euler Cromer
+
+    Parameters
+    ----------
+    springs : Array de objetos
+        Array com as várias molas/corpos do sistema
+        
+    sForce : Array de floats
+        Array de Forças sentidas exercidas pelo corpo da esquerda
+        
+    sAcce : Array de floats
+        Array com as acelerações sentidas por cada corpo. Necessário para o cálculo do próximo passo
+        
+    saveSteps : Int
+        Número de passos que devem ser executados até se guardar os dados para amostragem.
+    dt : float
+        Tempo entre passos
+
+    Returns
+    -------
+    Nada. Apenas atualiza as coordenadas e velocidades instantâneas para cada corpo.
+
+    """
     n = springs.size
     passo = 0
     
@@ -73,6 +141,32 @@ def springCalcCromer(springs, sForce, sAcce, saveSteps, dt):
 #%%
 
 def springCalcRK4(springs, sForce, sAcce, saveSteps, dt):
+    """
+    Função:
+    ---------
+    Calcula as novas posições e velocidades para cada mola com base no algoritmo de Runge-Kutta de Ordem 4
+
+    Parameters
+    ----------
+    springs : Array de objetos
+        Array com as várias molas/corpos do sistema
+        
+    sForce : Array de floats
+        Array de Forças sentidas exercidas pelo corpo da esquerda
+        
+    sAcce : Array de floats
+        Array com as acelerações sentidas por cada corpo. Necessário para o cálculo do próximo passo
+        
+    saveSteps : Int
+        Número de passos que devem ser executados até se guardar os dados para amostragem.
+    dt : float
+        Tempo entre passos
+
+    Returns
+    -------
+    Nada. Apenas atualiza as coordenadas e velocidades instantâneas para cada corpo.
+
+    """
     n = springs.size
     passo = 0
     
@@ -95,6 +189,45 @@ def springCalcRK4(springs, sForce, sAcce, saveSteps, dt):
 #%%
 
 def springCalcBeeman(springs, sForce, sAcce0, sAcce1, sAcce2, saveSteps, dt):
+    """
+    Função:
+    ---------
+    Calcula as novas posições e velocidades para cada mola com base no algoritmo de Beeman
+
+    Parameters
+    ----------
+    springs : Array de objetos
+        Array com as várias molas/corpos do sistema
+        
+    sForce : Array de floats
+        Array de Forças sentidas exercidas pelo corpo da esquerda.
+        
+    sAcce0 : Array de floats
+        Array com as acelerações do passo anterior
+        
+    sAcce1 : Array de floats
+        Array com as acelerações  do passo atual
+        
+    sAcce2 : Array de floats
+        Array com as acelerações do próximo passo
+        
+    saveSteps : Int
+        Número de passos que devem ser executados até se guardar os dados para amostragem.
+    dt : float
+        Tempo entre passos
+
+    Returns
+    -------
+    sAcce0 : Array de floats
+        Array com as acelerações do passo anterior
+        
+    sAcce1 : Array de floats
+        Array com as acelerações  do passo atual
+        
+    sAcce2 : Array de floats
+        Array com as acelerações do próximo passo
+
+    """
     n = springs.size
     passo = 0
     
@@ -104,12 +237,7 @@ def springCalcBeeman(springs, sForce, sAcce0, sAcce1, sAcce2, saveSteps, dt):
         acceCalc(springs, n, sForce, sAcce2)
         for i in range(n):
             springs[i].v += 1/3 * sAcce2[i] * dt + 5/6 * sAcce1[i] * dt - 1/6 * sAcce0[i] * dt
-            #springs[i].v += sAcce1[i] * dt
-# =============================================================================
-#         print('1' + str(sAcce0))
-#         print('2' + str(sAcce1))
-#         print('3' + str(sAcce2))
-# =============================================================================
+
         sAcce0 = copy.deepcopy(sAcce1)
         sAcce1 = copy.deepcopy(sAcce2)
         
@@ -119,6 +247,39 @@ def springCalcBeeman(springs, sForce, sAcce0, sAcce1, sAcce2, saveSteps, dt):
 #%%        
         
 def springCalcVerlet(springs, sForce, sAcce, saveSteps, dt, xLast, xPos):
+    """
+    Função:
+    ---------
+    Calcula as novas posições e velocidades para cada mola com base no algoritmo de Verlet
+
+    Parameters
+    ----------
+    springs : Array de objetos
+        Array com as várias molas/corpos do sistema
+        
+    sForce : Array de floats
+        Array de Forças sentidas exercidas pelo corpo da esquerda
+        
+    sAcce : Array de floats
+        Array com as acelerações sentidas por cada corpo. Necessário para o cálculo do próximo passo
+        
+    saveSteps : Int
+        Número de passos que devem ser executados até se guardar os dados para amostragem.
+    dt : float
+        Tempo entre passos
+        
+    xLast : Array de floats
+        Posição do passo anterior para cada corpo.
+        
+    xPos : Array de floats
+        Posição atual para cada corpo
+
+    Returns
+    -------
+    xLast : Array de floats
+        Posição do passo anterior para cada corpo.
+
+    """
     n = springs.size
     passo = 0
     
@@ -127,12 +288,9 @@ def springCalcVerlet(springs, sForce, sAcce, saveSteps, dt, xLast, xPos):
         for i in range(n):
             xPos[i] = copy.deepcopy(springs[i].x)
             springs[i].x = 2 * springs[i].x - xLast[i] + sAcce[i] * dt ** 2
-        #print('wow')
+
         xLast = copy.deepcopy(xPos)
-# =============================================================================
-#         for i in range(n):
-#             springs[i].v += 1/3 * sAcce2[i] * dt + 5/6 * sAcce1[i] * dt - 1/6 * sAcce0[i] * dt
-# =============================================================================
+
         
         passo += 1
     return xLast
@@ -140,6 +298,30 @@ def springCalcVerlet(springs, sForce, sAcce, saveSteps, dt, xLast, xPos):
 #%%
 
 def springSimulCromer(Tmax, dt, tSample, sArray):
+    """
+    
+
+    Parameters
+    ----------
+    Tmax : Float
+        Tempo total da simulação
+    dt : Float
+        Tempo entre passos
+    tSample : Float
+        Tempo entre cada amostragem
+    sArray : Array de strings
+        Array com as características de inicialização de cada corpo indicadas pelo usuário na GUI.
+
+    Returns
+    -------
+    springs : Array de objetos
+        Array com as várias molas/corpos do sistema
+    energy : Array de floats
+        Array com as energias do sistema a cada amostragem
+    time : Array de floats
+        Array com os tempos de cada amostragem
+
+    """
     
     size = int(Tmax/tSample)
     nStep = int(Tmax/dt)
@@ -172,6 +354,30 @@ def springSimulCromer(Tmax, dt, tSample, sArray):
 #%%
 
 def springSimulBeeman(Tmax, dt, tSample, sArray):
+    """
+    
+
+    Parameters
+    ----------
+    Tmax : Float
+        Tempo total da simulação
+    dt : Float
+        Tempo entre passos
+    tSample : Float
+        Tempo entre cada amostragem
+    sArray : Array de strings
+        Array com as características de inicialização de cada corpo indicadas pelo usuário na GUI.
+
+    Returns
+    -------
+    springs : Array de objetos
+        Array com as várias molas/corpos do sistema
+    energy : Array de floats
+        Array com as energias do sistema a cada amostragem
+    time : Array de floats
+        Array com os tempos de cada amostragem
+
+    """
     size = int(Tmax/tSample)
     nStep = int(Tmax/dt)
     saveSteps = int(tSample/dt)
@@ -209,6 +415,30 @@ def springSimulBeeman(Tmax, dt, tSample, sArray):
 #%%
 
 def springSimulVerlet(Tmax, dt, tSample, sArray):
+    """
+    
+
+    Parameters
+    ----------
+    Tmax : Float
+        Tempo total da simulação
+    dt : Float
+        Tempo entre passos
+    tSample : Float
+        Tempo entre cada amostragem
+    sArray : Array de strings
+        Array com as características de inicialização de cada corpo indicadas pelo usuário na GUI.
+
+    Returns
+    -------
+    springs : Array de objetos
+        Array com as várias molas/corpos do sistema
+    energy : Array de floats
+        Array com as energias do sistema a cada amostragem
+    time : Array de floats
+        Array com os tempos de cada amostragem
+
+    """
     size = int(Tmax/tSample)
     nStep = int(Tmax/dt)
     saveSteps = int(tSample/dt)
@@ -244,6 +474,30 @@ def springSimulVerlet(Tmax, dt, tSample, sArray):
 #%%
 
 def springSimulRK4(Tmax,dt,tSample,sArray):
+    """
+    
+
+    Parameters
+    ----------
+    Tmax : Float
+        Tempo total da simulação
+    dt : Float
+        Tempo entre passos
+    tSample : Float
+        Tempo entre cada amostragem
+    sArray : Array de strings
+        Array com as características de inicialização de cada corpo indicadas pelo usuário na GUI.
+
+    Returns
+    -------
+    springs : Array de objetos
+        Array com as várias molas/corpos do sistema
+    energy : Array de floats
+        Array com as energias do sistema a cada amostragem
+    time : Array de floats
+        Array com os tempos de cada amostragem
+
+    """
     
     size = int(Tmax/tSample)
     nStep = int(Tmax/dt)
@@ -276,16 +530,42 @@ def springSimulRK4(Tmax,dt,tSample,sArray):
 #%%
 
 def initPlots(springs):
+    """
+    
+
+    Parameters
+    ----------
+    springs : Array de objetos
+        Array com as várias molas/corpos do sistema
+
+    Returns
+    -------
+    plots : Array de plots
+        Array com 2 plots para a animação: um para representação gráfica dos corpos, e outro das molas
+
+    """
     size = springs.size
     plots = np.zeros((size, 2), dtype = object)
     #plotsSprings = np.zeros((size), dtype = object)
     for i in range(size):
-        plots[i, 0], = plt.plot([], [], "o", color = "red", zorder = 1)
-        plots[i, 1], = plt.plot([], [], "-", color = "black", zorder = 0)
+        plots[i, 0], = plt.plot([], [], "o", color = "red", zorder = 1)     #   Bolas vermelhas, na layer superior
+        plots[i, 1], = plt.plot([], [], "-", color = "black", zorder = 0)   #   Traços pretos, na layer inferior
     return plots
 
 def makeAnimation(i):
-    #print(i.size)
+    """
+    
+
+    Parameters
+    ----------
+    i : Objeto do array de frames
+        Contém as posições de certa iteração para todos os corpos
+
+    Returns
+    -------
+    Nada. Apenas trata de atualizar os dados durante a animação
+
+    """
     s = i.size
 
     if s == 1:
@@ -316,6 +596,19 @@ def makeAnimation(i):
 #%%
 
 def runGui(*args):
+    """
+    
+
+    Parameters
+    ----------
+    *args : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
     
     global ani
     global plotsAni
@@ -346,37 +639,39 @@ def runGui(*args):
     if alg[0] == True:
         a, b, t = springSimulCromer(tmax, dt, tSample, molas)
         for i in range(a.size):
-            ax.plot(t, a[i].xList, label = 'Euler-Cromer')
+            ax.plot(t, a[i].xList, label ='Mola ' + str(i+1)+ ' Euler-Cromer')
             fourier = sc.rfft(a[i].xList)
             fourierfreq = sc.rfftfreq(a[0].xList.size, 0.01)
-            ax2.plot(fourierfreq, abs(fourier), label = 'Euler-Cromer')
+            ax2.plot(fourierfreq, abs(fourier), label ='Mola ' + str(i+1)+ 'Euler-Cromer')
         
     if alg[1] == True:
         a2, b2, t2 = springSimulVerlet(tmax, dt, tSample, molas)
         for i in range(a2.size):
-            ax.plot(t2, a2[i].xList, label = 'Verlet')
+            ax.plot(t2, a2[i].xList, label ='Mola ' + str(i+1)+ 'Verlet')
             fourier2 = sc.rfft(a2[i].xList)
             fourierfreq = sc.rfftfreq(a2[0].xList.size, 0.01)
-            ax2.plot(fourierfreq, abs(fourier2), label = 'Verlet')
+            ax2.plot(fourierfreq, abs(fourier2), label ='Mola ' + str(i+1)+ 'Verlet')
         
     if alg[2] == True:
         a3, b3, t3 = springSimulBeeman(tmax, dt, tSample, molas)
         for i in range(a3.size):
-            ax.plot(t3, a3[i].xList, label = 'Beeman')
+            ax.plot(t3, a3[i].xList, label ='Mola ' + str(i+1)+ 'Beeman')
             fourier3 = sc.rfft(a3[i].xList)
             fourierfreq = sc.rfftfreq(a3[0].xList.size, 0.01)
-            ax2.plot(fourierfreq, abs(fourier3), label = 'Beeman')
+            ax2.plot(fourierfreq, abs(fourier3), label ='Mola ' + str(i+1)+ 'Beeman')
             
     if alg[3] == True:
         a4, b4, t4 = springSimulRK4(tmax, dt, tSample, molas)
         for i in range(a4.size):
-            ax.plot(t4, a4[i].xList, label = 'RK4')
+            ax.plot(t4, a4[i].xList, label ='Mola ' + str(i+1)+ 'RK4')
             fourier4 = sc.rfft(a4[i].xList)
             fourierfreq = sc.rfftfreq(a4[0].xList.size, 0.01)
-            ax2.plot(fourierfreq, abs(fourier4), label = 'RK4')
+            ax2.plot(fourierfreq, abs(fourier4), label ='Mola ' + str(i+1)+ 'RK4')
             
     ax.legend()
     ax2.legend()
+    ax2.set_xlim([0.1,1])
+    ax2.set_ylim([0,10000])
     
     if a.size == 1:
         r = a[0].xList
@@ -398,6 +693,19 @@ def runGui(*args):
 #%%
 
 def addSpring(*args):
+    """
+    
+
+    Parameters
+    ----------
+    *args : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
     global pos
     global springTextArray
     
@@ -436,6 +744,19 @@ def addSpring(*args):
     minax.set_position([0.25, butPos, 0.03, 0.03], which='both')
     
 def takeSpring(*args):
+    """
+    
+
+    Parameters
+    ----------
+    *args : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
     global pos
     global xIn
     global butPos
