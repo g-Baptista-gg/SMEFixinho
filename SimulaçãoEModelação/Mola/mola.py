@@ -100,12 +100,12 @@ def acceCalc(springs, sSize, sForce, sAcce):
         sAcce[i] = - sForce[i] / springs[i].mass + sForce[i + 1] / springs[i].mass
         
         
-def acceCalcRK4(springs, sSize, sForce, sAcce,dx1):
+def acceCalcRK4(springs, sSize, sForce, sAcce,dx):
     for i in range(sSize):
         if i == 0:
-            sForce[i] = springs[i].k * (springs[i].x+dx1 - springs[i].xEq)
+            sForce[i] = springs[i].k * (springs[i].x+dx[i] - springs[i].xEq)
         else:
-            sForce[i] = springs[i].k * (springs[i].x+dx1 - springs[i - 1].x - springs[i].xEq)
+            sForce[i] = springs[i].k * (springs[i].x+dx[i] - springs[i - 1].x-dx[i-1] - springs[i].xEq)
             
     for i in range(sSize):
         sAcce[i] = - sForce[i] / springs[i].mass + sForce[i + 1] / springs[i].mass
@@ -185,38 +185,67 @@ def springCalcRK4(springs, sForce, sAcce, saveSteps, dt):
     sForceRK=np.zeros(n + 1, dtype = float)
     sAcceRK=np.zeros(n, dtype = float)
     pos=np.zeros(n)
+    vArr=np.zeros(n)
+    x1=np.zeros(n)
+    v1=np.zeros(n)
+    x2=np.zeros(n)
+    v2=np.zeros(n)
+    x3=np.zeros(n)
+    v3=np.zeros(n)
+    x4=np.zeros(n)
+    v4=np.zeros(n)
     while passo < saveSteps:
         acceCalc(springs, n, sForce, sAcce)
+        
+        for i in range(n): # Este passo intermédio é necessário por causa das cópias se irem alterando
+            vArr[i]=springs[i].v
+        
         for i in range(n):
-            v=springs[i].v
+            x1[i]=dt*vArr[i]
+            v1[i]=sAcce[i]*dt
+        
+        acceCalcRK4(springs, n, sForceRK, sAcceRK,x1/2)
+        for i in range(n):
+            x2[i]=dt*(vArr[i]+v1[i]/2)
+            v2[i]=sAcceRK[i]*dt
+            
+        acceCalcRK4(springs, n, sForceRK, sAcceRK,x2/2)
+        for i in range(n):
+            x3[i]=dt*(vArr[i]+v2[i]/2)
+            v3[i]=sAcceRK[i]*dt
+    
+        acceCalcRK4(springs, n, sForceRK, sAcceRK,x3)
+        for i in range(n):
+            x4[i]=dt*(vArr[i]+v3[i])
+            v4[i]=sAcceRK[i]*dt
+         
+        for i in range(n):
+            springs[i].v += 1/6 * (v1[i] +2 * v2[i] +2 * v3[i]+v4[i])
+            springs[i].x+=1/6 * (x1[i] +2 * x2[i] +2 * x3[i]+x4[i])
+        
+        # for i in range(n):
+        #     v=springs[i].v
 
-            # springs[i].v += sAcce[i] * dt
+        #     dx1=dt*v
+        #     dv1=sAcce[i]*dt
             
-            # k2=(v+ springs[i].v)*dt/2 + sAcce[i] * (dt/2)
+        #     acceCalcRK4(springs, n, sForceRK, sAcceRK,dx1/2)
+        #     dx2=dt*(v+dv1 / 2)
+        #     dv2=dt* sAcceRK[i]
             
-            # k3=(v+ k2) * dt/2 + sAcce[i] * (dt/2)
+        #     acceCalcRK4(springs, n, sForceRK, sAcceRK,dx2/2)
+        #     dx3=dt*(v+dv2 / 2)
+        #     dv3=dt* sAcceRK[i]
             
-            # k4=(v+ k3)*dt + sAcce[i] * dt
-            dx1=dt*v
-            dv1=sAcce[i]*dt
+        #     acceCalcRK4(springs, n, sForceRK, sAcceRK,dx3)
+        #     dx4=dt*(v+dv3)
+        #     dv4=dt* sAcceRK[i]
             
-            acceCalcRK4(springs, n, sForceRK, sAcceRK,dx1/2)
-            dx2=dt*(v+dv1 / 2)
-            dv2=dt* sAcceRK[i]
+        #     pos[i]=1/6 * (dx1 +2 * dx2 +2 * dx3+dx4)
+        #     springs[i].v += 1/6 * (dv1 +2 * dv2 +2 * dv3+dv4)
             
-            acceCalcRK4(springs, n, sForceRK, sAcceRK,dx2/2)
-            dx3=dt*(v+dv2 / 2)
-            dv3=dt* sAcceRK[i]
-            
-            acceCalcRK4(springs, n, sForceRK, sAcceRK,dx3)
-            dx4=dt*(v+dv3)
-            dv4=dt* sAcceRK[i]
-            
-            pos[i]=1/6 * (dx1 +2 * dx2 +2 * dx3+dx4)
-            springs[i].v += 1/6 * (dv1 +2 * dv2 +2 * dv3+dv4)
-            
-        for i in range(n):
-            springs[i].x+=pos[i]
+        # for i in range(n):
+        #     springs[i].x+=pos[i]
             
             
         passo += 1
