@@ -705,23 +705,23 @@ def runGui(*args):
         molas.append(S)                     # Adiciona as características para mais tarde se criarem os objetos
     
     
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots()                # Inicializa-se o plot das Posições
     ax.set_title('Posição de cada corpo')
     ax.set_xlabel('Iteração')
     ax.set_ylabel('Posição')
     
-    fig2, ax2 = plt.subplots()
+    fig2, ax2 = plt.subplots()              # Inicializa-se o plot das Frequências
     ax2.set_title('Transformadas de Fourier')
     ax2.set_xlabel('Frequência')
     ax2.set_ylabel('Intensidade')
     
-    fig3, ax3 = plt.subplots()
+    fig3, ax3 = plt.subplots()              # Inicializa-se o plot das energias
     ax3.set_title('Evolução da Energia do sistema')
     ax3.set_xlabel('Iteração')
     ax3.set_ylabel('Energia')
     
     
-    # Consoante os algorítmos escolhidos, o programa irá fazer os cálculos e gráficos. Nota: a animação apenas está associada ao Euler-Cromer
+    # Consoante os algorítmos escolhidos, o programa irá fazer os cálculos e gráficos.
     if alg[0] == True:  
         a, b, t = springSimulCromer(tmax, dt, tSample, molas)
         for i in range(a.size):
@@ -764,26 +764,40 @@ def runGui(*args):
     ax2.set_xlim([0.1,1])
     ax2.set_ylim([0,10000])
     
-    if a.size == 1:
-        r = a[0].xList
+    
+    if alg[0] == True :
+        an = a
+        nome= 'Animação: Euler-Cromer'
+    elif alg[1] == True :
+        an = a2
+        nome= 'Animação: Verlet'
+    elif alg[2] == True :
+        an = a3
+        nome= 'Animação: Beeman'
     else:
-        for i in range(a.size-1):
+        an = a4
+        nome= 'Animação: RK4'
+    if an.size == 1:
+        r = an[0].xList
+    else:
+        for i in range(an.size-1):
             if i == 0:
-                r=np.column_stack((a[0].xList,a[1].xList))
+                r=np.column_stack((an[0].xList,an[1].xList))
             else:
-                r=np.column_stack((r,a[i+1].xList))
+                r=np.column_stack((r,an[i+1].xList))
             
-        #r = np.column_stack((a[0].xList))
+
 
     figAni, axAni = plt.subplots()
     axAni.set_xlim(0, 20)
     axAni.set_ylim(-5, 5)
-    plotsAni = initPlots(a)
+    plotsAni = initPlots(an)
+    figAni.suptitle(nome, fontsize=16)
     ani = animation.FuncAnimation(figAni, makeAnimation, frames = r, interval = .1)
 
 #%%
 
-def addSpring(*args):
+def addSpring(*args): # Cria um novo espaço para o utilizador introduzir os dados da nova mola
     global pos
     global springTextArray
     
@@ -818,23 +832,11 @@ def addSpring(*args):
     global minax
     
     butPos-=0.05
-    plusax.set_position([0.35, butPos, 0.03, 0.03], which='both')
-    minax.set_position([0.25, butPos, 0.03, 0.03], which='both')
+    plusax.set_position([0.35, butPos, 0.03, 0.03], which='both') # altera a posição do botão de adicionar mola
+    minax.set_position([0.25, butPos, 0.03, 0.03], which='both')  # altera a posição do botão de retirar mola
     
 def takeSpring(*args):
-    """
-    
 
-    Parameters
-    ----------
-    *args : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    None.
-
-    """
     global pos
     global xIn
     global butPos
@@ -846,14 +848,14 @@ def takeSpring(*args):
     global molaName
     
     
-    if molaName>1 :
+    if molaName>1 :                                             # apenas faz mudanças se existir mais que uma mola
         pos+=0.05
         butPos+=0.05
         
         for i in range(5):
-            springTextArray[-1][i*2].remove()
+            springTextArray[-1][i*2].remove()                   # apaga os plots de texto
             
-        springTextArray.pop()
+        springTextArray.pop()                                   # apaga a posição no vetor
         molaName-=1
         xIn-=3
         plusax.set_position([0.35, butPos, 0.03, 0.03], which='both')
