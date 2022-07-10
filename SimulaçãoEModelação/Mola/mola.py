@@ -712,7 +712,7 @@ def runGui(*args):
     
     fig2, ax2 = plt.subplots()              # Inicializa-se o plot das Frequências
     ax2.set_title('Transformadas de Fourier')
-    ax2.set_xlabel('Frequência')
+    ax2.set_xlabel('Frequência (Hz)')
     ax2.set_ylabel('Intensidade')
     
     fig3, ax3 = plt.subplots()              # Inicializa-se o plot das energias
@@ -727,7 +727,7 @@ def runGui(*args):
         for i in range(a.size):
             ax.plot(t, a[i].xList, label ='Mola ' + str(i+1)+ ' Euler-Cromer')
             fourier = sc.rfft(a[i].xList)
-            fourierfreq = sc.rfftfreq(a[0].xList.size, 0.01)
+            fourierfreq = sc.rfftfreq(a[0].xList.size, tSample)
             ax2.plot(fourierfreq, abs(fourier), label ='Mola ' + str(i+1)+ ' Euler-Cromer')
         ax3.plot(b,label = 'Euler-Cromer')
         
