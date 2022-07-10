@@ -864,7 +864,10 @@ def takeSpring(*args):
 def exitSim(*args):
     plt.close()
     
+
+def fullScreen(*args):
     
+    manager.full_screen_toggle()
 
 
 gui = plt.figure(figsize = (12, 7))
@@ -915,13 +918,15 @@ sA0=[s0,s1,s2,s3,s4,s5,s6,s7,s8,s9]
 
 springTextArray.append(sA0)
 
-gui.text(0.4,0.9,'Simulação de Sistemas Massa-Mola',fontsize='20')
+gui.suptitle('Simulação de Sistemas Massa-Mola',fontsize='20')
 gui.text(0.05,0.9,'Gonçalo&Grilo Inc.',fontsize='20')
 
 dtax = plt.axes([0.85, 0.8, 0.05, 0.03])
 dttb = TextBox(dtax, '$dt$(s)', initial = '0.001')
 
-
+fScreenax=plt.axes([0.90, 0.90, 0.1, 0.05])
+FSbut= Button(fScreenax,'Full Screen')
+FSbut.on_clicked(fullScreen)
 
 tmaxax = plt.axes([0.85, 0.7, 0.05, 0.03])
 tmaxtb = TextBox(tmaxax, '$t_{Max}$(s)', initial = '100')
@@ -930,6 +935,7 @@ tsamax = plt.axes([0.85, 0.6, 0.05, 0.03])
 tsamtb = TextBox(tsamax, '$t_{Sample}$(s)', initial = '0.01')
 
 manager = plt.get_current_fig_manager()
-manager.full_screen_toggle()
+
+
 
 
