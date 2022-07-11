@@ -146,12 +146,12 @@ def acceCalcRK4(springs, sSize, sForce, sAcce, dx):
     """
     for i in range(sSize):
         if i == 0:
-            sForce[i] = springs[i].k * (springs[i].x + dx[i] - springs[i].xEq)
+            sForce[i] = springs[i].k * (springs[i].x + dx[i] - springs[i].xEq)   # -F= k* (x1 + dx1 - xeq)
         else:
-            sForce[i] = springs[i].k * (springs[i].x + dx[i] - springs[i - 1].x - dx[i-1] - springs[i].xEq)
+            sForce[i] = springs[i].k * (springs[i].x + dx[i] - springs[i - 1].x - dx[i-1] - springs[i].xEq) # -F= k * (x1 + dx1 - x0 -dx0 - xeq)
             
     for i in range(sSize):
-        sAcce[i] = - sForce[i] / springs[i].mass + sForce[i + 1] / springs[i].mass 
+        sAcce[i] = - sForce[i] / springs[i].mass + sForce[i + 1] / springs[i].mass  # a= Sum F / m
 
 #%%
 
@@ -184,8 +184,8 @@ def springCalcCromer(springs, sForce, sAcce, saveSteps, dt):
     while passo < saveSteps: # executa várias iterações e atualiza as posições e velocidades instantâneas até ser necessário recolher amostragem
         acceCalc(springs, n, sForce, sAcce)
         for i in range(n):
-            springs[i].v += sAcce[i] * dt
-            springs[i].x += springs[i].v * dt
+            springs[i].v += sAcce[i] * dt       # v=v0 + a * dt
+            springs[i].x += springs[i].v * dt   # x = x0 + v * dt
         passo += 1
 
 #%%        
@@ -382,7 +382,8 @@ def springSimulCromer(Tmax, dt, tSample, sArray):
     size, saveSteps, n, springs, sForce, sAcce, time, energy = initSimul(Tmax, dt, tSample, sArray)
     
     for i in range(n):
-        springs[i] = Body(sArray[i][0], sArray[i][1], sArray[i][2], sArray[i][3], sArray[i][4], size + 1) # Cria os objetos com as características de cada corpo/mola especificadas pelo utilizador na GUI
+        springs[i] = Body(sArray[i][0], sArray[i][1], sArray[i][2], sArray[i][3], sArray[i][4], size + 1) # Cria os objetos com as características de 
+                                                                                                # cada corpo/mola especificadas pelo utilizador na GUI
     
     energy[0] = energyCalc(springs) # Adiciona a energia do sistema no estado inicial
     
@@ -390,9 +391,9 @@ def springSimulCromer(Tmax, dt, tSample, sArray):
         time[i + 1] = time[i] + tSample # Adiciona o tempo da nova amostragem
         springCalcCromer(springs, sForce, sAcce, saveSteps, dt) # Executa o cálculo de várias iterações até ocorrer amostragem segundo o algorítmo de Euler-Cromer
         for j in range(n):
-            springs[j].vList[i + 1] = springs[j].v # Guarda o valor atual da velocidade
-            springs[j].xList[i + 1] = springs[j].x # Guarda o valor atual da posição
-        energy[i + 1] = energyCalc(springs)
+            springs[j].vList[i + 1] = springs[j].v  # Guarda o valor atual da velocidade
+            springs[j].xList[i + 1] = springs[j].x  # Guarda o valor atual da posição
+        energy[i + 1] = energyCalc(springs)         # Calcula e armazena o novo valor de energia do sistema
         
     t1 = ti.time()
     print('Euler-Cromer time: ' + str(t1 - t0))
@@ -431,19 +432,21 @@ def springSimulVerlet(Tmax, dt, tSample, sArray):
     size, saveSteps, n, springs, sForce, sAcce, time, energy, xLast, xPos = initSimul(Tmax, dt, tSample, sArray, alg = 'Verlet')
     
     for i in range(n):
-        springs[i] = Body(sArray[i][0], sArray[i][1], sArray[i][2], sArray[i][3], sArray[i][4], size + 1)
-        xLast[i] = springs[i].x - springs[i].v * dt
+        springs[i] = Body(sArray[i][0], sArray[i][1], sArray[i][2], sArray[i][3], sArray[i][4], size + 1) # Cria os objetos com as características de
+                                                                                                # cada corpo/mola especificadas pelo utilizador na GUI
+
+        xLast[i] = springs[i].x - springs[i].v * dt        # calcula a posição do passo anterior ao primeiro 
     
-    energy[0] = energyCalc(springs)
+    energy[0] = energyCalc(springs)      # Adiciona a energia do sistema no estado inicial
     
-    for i in range(size):
-        time[i + 1] = time[i] + tSample
-        xLast = springCalcVerlet(springs, sForce, sAcce, saveSteps, dt, xLast, xPos)
+    for i in range(size):           # Executa todas as amostragens
+        time[i + 1] = time[i] + tSample     # Adiciona o tempo da nova amostragem
+        xLast = springCalcVerlet(springs, sForce, sAcce, saveSteps, dt, xLast, xPos) # Executa o cálculo de várias iterações até ocorrer amostragem segundo o algorítmo de Verlet
             
         for j in range(n):
-            springs[j].vList[i + 1] = springs[j].v
-            springs[j].xList[i + 1] = springs[j].x
-        energy[i + 1] = energyCalc(springs)
+            springs[j].vList[i + 1] = springs[j].v  # Guarda o valor atual da velocidade
+            springs[j].xList[i + 1] = springs[j].x  # Guarda o valor atual da posição
+        energy[i + 1] = energyCalc(springs)         # Calcula e armazena o novo valor de energia do sistema
         
     t1 = ti.time()
     print('Verlet time: ' + str(t1 - t0))
@@ -482,7 +485,8 @@ def springSimulBeeman(Tmax, dt, tSample, sArray):
     size, saveSteps, n, springs, sForce, sAcce0, sAcce1, sAcce2, time, energy = initSimul(Tmax, dt, tSample, sArray, alg = 'Beeman')
     
     for i in range(n):
-        springs[i] = Body(sArray[i][0], sArray[i][1], sArray[i][2], sArray[i][3], sArray[i][4], size + 1)
+        springs[i] = Body(sArray[i][0], sArray[i][1], sArray[i][2], sArray[i][3], sArray[i][4], size + 1) # Cria os objetos com as características de
+                                                                                                # cada corpo/mola especificadas pelo utilizador na GUI
     
     energy[0] = energyCalc(springs)
     
@@ -491,12 +495,12 @@ def springSimulBeeman(Tmax, dt, tSample, sArray):
             acceCalc(springs, n, sForce, sAcce1)
             sAcce0 = copy.deepcopy(sAcce1)
         time[i + 1] = time[i] + tSample
-        sAcce0, sAcce1, sAcce2 = springCalcBeeman(springs, sForce, sAcce0, sAcce1, sAcce2, saveSteps, dt)
+        sAcce0, sAcce1, sAcce2 = springCalcBeeman(springs, sForce, sAcce0, sAcce1, sAcce2, saveSteps, dt) # Executa o cálculo de várias iterações até ocorrer amostragem segundo o algorítmo de Beeman e atualiza as acelerações do passo anterior, passo atual e novo passo
             
         for j in range(n):
-            springs[j].vList[i + 1] = springs[j].v
-            springs[j].xList[i + 1] = springs[j].x
-        energy[i + 1] = energyCalc(springs)
+            springs[j].vList[i + 1] = springs[j].v  # Guarda o valor atual da velocidade
+            springs[j].xList[i + 1] = springs[j].x  # Guarda o valor atual da posição
+        energy[i + 1] = energyCalc(springs)         # Calcula e armazena o novo valor de energia do sistema
         
     t1 = ti.time()
     print('Beeman time: ' + str(t1 - t0))
@@ -535,18 +539,18 @@ def springSimulRK4(Tmax, dt, tSample, sArray):
     size, saveSteps, n, springs, sForce, sAcce, time, energy = initSimul(Tmax, dt, tSample, sArray)
     
     for i in range(n):
-        springs[i] = Body(sArray[i][0], sArray[i][1], sArray[i][2], sArray[i][3], sArray[i][4], size + 1)
-    
+        springs[i] = Body(sArray[i][0], sArray[i][1], sArray[i][2], sArray[i][3], sArray[i][4], size + 1) # Cria os objetos com as características de
+                                                                                                # cada corpo/mola especificadas pelo utilizador na GUI    
     energy[0] = energyCalc(springs)
     
     for i in range(size):
         time[i + 1] = time[i] + tSample
-        springCalcRK4(springs, sForce, sAcce, saveSteps, dt)
+        springCalcRK4(springs, sForce, sAcce, saveSteps, dt) # Executa o cálculo de várias iterações até ocorrer amostragem segundo o algorítmo de RK4
         
         for j in range(n):
-            springs[j].vList[i + 1] = springs[j].v
-            springs[j].xList[i + 1] = springs[j].x
-        energy[i + 1] = energyCalc(springs)
+            springs[j].vList[i + 1] = springs[j].v  # Guarda o valor atual da velocidade
+            springs[j].xList[i + 1] = springs[j].x  # Guarda o valor atual da posição
+        energy[i + 1] = energyCalc(springs)         # Calcula e armazena o novo valor de energia do sistema
         
     t1 = ti.time()
     print('RK4 time: ' + str(t1 - t0))
@@ -601,12 +605,12 @@ def makeAnimation(i):
 
     if s == 1:
         plotsAni[0, 0].set_data(i, 0) # Atualiza o valor da posição do corpo
-        springsx = [] # Inicia o array de coordenadas X para cada vértice das molas
-        springsy = [] # Inicia o array de coordenadas Y para cada vértice das molas
+        springsx = [] # Inicia o array de coordenadas X para cada nodo das molas
+        springsy = [] # Inicia o array de coordenadas Y para cada nodo das molas
         nsprings = 20 # Indica quantos nodos cada mola terá
         for k in range(nsprings + 1):
             springsx.append(k * i/nsprings)
-            springsy.append(0.2 * np.sin(k * np.pi/2)) # Usa-se o sin(k pi/2) de modo ao valor do Y alternar entre positivo e negativo
+            springsy.append(0.5 * np.sin(k * np.pi/2)) # Usa-se o sin(k pi/2) de modo ao valor do Y alternar entre + 0 - 0
         plotsAni[0, 1].set_data(springsx, springsy) # Desenha a mola
         
     else: # Neste caso, a posição do nodo das molas deve ter em conta a posição do corpo anterior
@@ -618,11 +622,11 @@ def makeAnimation(i):
             if j == 0 :
                 for k in range(nsprings + 1):
                     springsx.append(k * i[j]/nsprings)
-                    springsy.append(0.2 * np.sin(k * np.pi/2))
+                    springsy.append(0.5 * np.sin(k * np.pi/2))
             else:
                 for k in range(nsprings + 1):
                     springsx.append(i[j - 1] + k * (i[j] - i[j - 1])/nsprings)
-                    springsy.append(0.2 * np.sin(k * np.pi/2))
+                    springsy.append(0.5 * np.sin(k * np.pi/2))
             plotsAni[j, 1].set_data(springsx, springsy)
     
 #%%
@@ -734,14 +738,14 @@ def runGui(*args):
     if an.size == 1:
         r = an[0].xList
     else:
-        for i in range(an.size - 1):
+        for i in range(an.size - 1): # Ordena e junta as posições de cada mola por coluna. Ex: A linha 0 possui as posições iniciais para cada mola
             if i == 0:
-                r = np.column_stack((an[0].xList, an[1].xList))
+                r = np.column_stack((an[0].xList, an[1].xList)) 
             else:
                 r = np.column_stack((r, an[i + 1].xList))
             
     figAni, axAni = plt.subplots(figsize = (10, 4))
-    axAni.set_xlim(0, np.amax(r) * 1.1)
+    axAni.set_xlim(0, np.amax(r) * 1.2)
     axAni.set_ylim(-5, 5)
     axAni.set_xlabel('x (m)')
     axAni.get_yaxis().set_visible(False)
@@ -761,10 +765,10 @@ def addSpring(*args): # Cria um novo espaço para o utilizador introduzir os dad
     global plusax
     global minax
     
-    molaName += 1
-    xIn += 3
+    molaName += 1 # Aumenta 1 no número da mola
+    xIn += 3  # Aumenta a posição inicial da nova mola, de modo a não ficar na mesma posição que a antiga
     pos -= 0.05 # Posição Y das novas caixas de texto
-    butPos -= 0.05
+    butPos -= 0.05 # Nova posição Y dos botões + e -
     
     s0 = plt.axes([0.15, pos, 0.05, 0.03])
     s1 = TextBox(s0, 'Mola ' + str(molaName) + ': Massa(kg)', initial = '1')
@@ -790,7 +794,7 @@ def addSpring(*args): # Cria um novo espaço para o utilizador introduzir os dad
     
 #%%    
     
-def takeSpring(*args):
+def takeSpring(*args): # Remove a caixa de texto de parâmetros da última mola ( apenas funciona para mais que 1 mola presente)
 
     global pos
     global xIn
@@ -814,20 +818,20 @@ def takeSpring(*args):
     
 #%%
     
-def exitSim(*args):
+def exitSim(*args): # Encerra o programa
     plt.close()
     
 #%%
 
-def fullScreen(*args):
+def fullScreen(*args): # Altera o estado de fullscreen de On para Off e o contrário
     manager.full_screen_toggle()
 
 #%%
 
-butPos = 0.7
-pos = 0.8
-molaName = 1
-xIn = 7
+butPos = 0.7    # Y inicial dos botões + e -
+pos = 0.8       # Y inicial da caixa de texto das springs
+molaName = 1    # Número da mola
+xIn = 7         # Posição inicial do sistema de molas
 
 gui = plt.figure(figsize = (12, 7))
 
